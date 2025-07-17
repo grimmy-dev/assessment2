@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,16 +42,15 @@ import Dashboard from "./dashboard";
 const fileSchema = z.object({
   file: z
     .any()
-    .refine((files) => files && files.length > 0, "Please select a file")
-    .refine((files) => files && files instanceof FileList, "Invalid file type")
+    .refine((files) => files?.length > 0, "Please select a file")
+    .refine((files) => files instanceof FileList, "Invalid file type")
     .refine(
       (files) =>
-        files &&
-        (files[0]?.type === "text/csv" || files[0]?.name.endsWith(".csv")),
+        files?.[0]?.type === "text/csv" || files?.[0]?.name.endsWith(".csv"),
       "Only CSV files are allowed"
     )
     .refine(
-      (files) => files && files[0]?.size <= 50 * 1024 * 1024,
+      (files) => files?.[0]?.size <= 50 * 1024 * 1024,
       "File size must be less than 50MB"
     ),
 });
@@ -66,49 +65,43 @@ type LogMessage = {
   finished?: boolean;
 };
 
+type UploadStatus = "idle" | "uploading" | "success" | "error";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 const Uploader = () => {
-  const [uploadStatus, setUploadStatus] = useState<
-    "idle" | "uploading" | "success" | "error"
-  >("idle");
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] =
-    useState<string>("disconnected");
+  const [canFetchDashboard, setCanFetchDashboard] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<FileFormData>({
     resolver: zodResolver(fileSchema),
-    defaultValues: {
-      file: undefined,
-    },
+    defaultValues: { file: undefined },
   });
 
-  // Simple auto-scroll function - only affects logs container
   const scrollToBottom = useCallback(() => {
     if (logsContainerRef.current) {
-      const container = logsContainerRef.current;
-      container.scrollTop = container.scrollHeight;
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
     }
   }, []);
 
-  // Scroll to bottom when logs change
   useEffect(() => {
     scrollToBottom();
   }, [logs, scrollToBottom]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
+      socketRef.current?.close();
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
@@ -116,11 +109,7 @@ const Uploader = () => {
   }, []);
 
   const addLog = useCallback(
-    (
-      level: "info" | "success" | "error",
-      message: string,
-      progress?: number
-    ) => {
+    (level: LogMessage["level"], message: string, progress?: number) => {
       const log: LogMessage = {
         timestamp: new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -144,13 +133,10 @@ const Uploader = () => {
       }
 
       const wsUrl = `ws://localhost:8000/ws/${taskId}`;
-      console.log("Connecting to WebSocket:", wsUrl);
-
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
 
       socket.onopen = () => {
-        console.log("WebSocket connected");
         setConnectionStatus("connected");
         addLog("info", "Connected to server");
       };
@@ -158,25 +144,20 @@ const Uploader = () => {
       socket.onmessage = (event) => {
         try {
           const log = JSON.parse(event.data);
-          console.log("Received log:", log);
-
           setLogs((prev) => [...prev, log]);
 
           if (log.progress !== undefined) {
             setUploadProgress(log.progress);
           }
 
-          // Only close WebSocket when task is actually finished
           if (log.finished === true) {
             if (log.level === "success") {
+              setCanFetchDashboard(true);
               setUploadStatus("success");
-              // Close WebSocket connection on completion
-              socket.close(1000, "Task completed successfully");
             } else if (log.level === "error") {
               setUploadStatus("error");
-              // Close WebSocket connection on error
-              socket.close(1000, "Task failed");
             }
+            socket.close(1000, "Task completed");
           }
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
@@ -184,10 +165,7 @@ const Uploader = () => {
       };
 
       socket.onclose = (event) => {
-        console.log("WebSocket closed:", event.code, event.reason);
         setConnectionStatus("disconnected");
-
-        // Only try to reconnect if it was an unexpected close and we're still processing
         if (event.code !== 1000 && uploadStatus === "uploading") {
           addLog("info", "Connection lost, attempting to reconnect...");
           reconnectTimeoutRef.current = setTimeout(() => {
@@ -196,8 +174,7 @@ const Uploader = () => {
         }
       };
 
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
+      socket.onerror = () => {
         setConnectionStatus("error");
         addLog("error", "WebSocket connection error");
       };
@@ -216,34 +193,35 @@ const Uploader = () => {
       formData.append("file", file);
 
       try {
-        addLog("info", "Uploading file...", 5);
+        addLog("info", "Uploading file...");
 
-        const res = await fetch("http://localhost:8000/upload", {
+        const response = await fetch(`${API_URL}/upload`, {
           method: "POST",
           body: formData,
         });
 
-        if (!res.ok) {
-          const errorData = await res
+        if (!response.ok) {
+          const errorData = await response
             .json()
             .catch(() => ({ detail: "Upload failed" }));
           throw new Error(errorData.detail || "Upload failed");
         }
 
-        const data = await res.json();
-        const taskId = data.task_id;
-
-        console.log("Upload successful, task ID:", taskId);
-        setCurrentTaskId(taskId);
-
-        addLog("success", `File uploaded successfully. Task ID: ${taskId}`);
-
-        // Connect to WebSocket after successful upload
-        connectWebSocket(taskId);
+        const data = await response.json();
+        setCurrentTaskId(data.task_id);
+        addLog(
+          "success",
+          `File uploaded successfully. Task ID: ${data.task_id}`
+        );
+        connectWebSocket(data.task_id);
       } catch (error) {
-        console.error("Upload error:", error);
         setUploadStatus("error");
-        addLog("error", `Upload failed: ${error}`);
+        addLog(
+          "error",
+          `Upload failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
       }
     },
     [addLog, connectWebSocket]
@@ -253,19 +231,16 @@ const Uploader = () => {
     if (!currentTaskId) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/cancel/${currentTaskId}`, {
+      const response = await fetch(`${API_URL}/cancel/${currentTaskId}`, {
         method: "DELETE",
       });
 
-      if (res.ok) {
+      if (response.ok) {
         addLog("info", "Task cancelled");
         setUploadStatus("idle");
-        if (socketRef.current) {
-          socketRef.current.close();
-        }
+        socketRef.current?.close();
       }
     } catch (error) {
-      console.error("Cancel error:", error);
       addLog("error", "Failed to cancel task");
     }
   }, [currentTaskId, addLog]);
@@ -279,7 +254,6 @@ const Uploader = () => {
   );
 
   const handleReset = useCallback(() => {
-    // Cancel any active task
     if (currentTaskId && uploadStatus === "uploading") {
       cancelTask();
     }
@@ -296,9 +270,7 @@ const Uploader = () => {
       fileInputRef.current.value = "";
     }
 
-    if (socketRef.current) {
-      socketRef.current.close();
-    }
+    socketRef.current?.close();
 
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
@@ -380,7 +352,7 @@ const Uploader = () => {
                     name="file"
                     render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
-                        <FormLabel>CSV File Only.</FormLabel>
+                        <FormLabel>CSV File Only</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -388,7 +360,7 @@ const Uploader = () => {
                             disabled={uploadStatus === "uploading"}
                             onChange={(e) => {
                               onChange(e.target.files);
-                              if (e.target.files && e.target.files[0]) {
+                              if (e.target.files?.[0]) {
                                 setUploadedFile(e.target.files[0]);
                               }
                             }}
@@ -503,31 +475,28 @@ const Uploader = () => {
                           Logs will appear here during processing...
                         </div>
                       ) : (
-                        <>
-                          {logs.map((log, index) => (
-                            <div
-                              key={index}
-                              className="text-xs flex items-start gap-2 mb-1"
+                        logs.map((log, index) => (
+                          <div
+                            key={index}
+                            className="text-xs flex items-start gap-2 mb-1"
+                          >
+                            <span className="text-muted-foreground shrink-0">
+                              {log.timestamp}
+                            </span>
+                            <span
+                              className={`font-semibold shrink-0 ${
+                                log.level === "error"
+                                  ? "text-red-500"
+                                  : log.level === "success"
+                                  ? "text-green-500"
+                                  : "text-blue-500"
+                              }`}
                             >
-                              <span className="text-muted-foreground shrink-0">
-                                {log.timestamp}
-                              </span>
-                              <span
-                                className={`font-semibold shrink-0 ${
-                                  log.level === "error"
-                                    ? "text-red-500"
-                                    : log.level === "success"
-                                    ? "text-green-500"
-                                    : "text-blue-500"
-                                }`}
-                              >
-                                [{log.level.toUpperCase()}]
-                              </span>
-                              <span className="break-words">{log.message}</span>
-                            </div>
-                          ))}
-                          <div ref={logsEndRef} />
-                        </>
+                              [{log.level.toUpperCase()}]
+                            </span>
+                            <span className="break-words">{log.message}</span>
+                          </div>
+                        ))
                       )}
                     </div>
                   </AccordionContent>
@@ -537,7 +506,7 @@ const Uploader = () => {
           </Card>
         </div>
       </section>
-      <Dashboard />
+      <Dashboard taskId={currentTaskId} canFetch={canFetchDashboard} />
     </>
   );
 };

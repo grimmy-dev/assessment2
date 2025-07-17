@@ -1,4 +1,3 @@
-import React from "react";
 import InputTable from "./input-table";
 import OutputDisplayer from "./output-displayer";
 

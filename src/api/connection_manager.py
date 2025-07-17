@@ -43,13 +43,20 @@ class ConnectionManager:
         if task_id in self.connection_locks:
             del self.connection_locks[task_id]
 
-    async def send_log(self, task_id: str, level: str, message: str, progress: int = 0, finished: bool = False):
+    async def send_log(
+        self,
+        task_id: str,
+        level: str,
+        message: str,
+        progress: int = 0,
+        finished: bool = False,
+    ):
         log = LogMessage(
             timestamp=datetime.now().strftime("%I:%M:%S %p"),
             level=level,
             message=message,
             progress=progress,
-            finished=finished if finished else None
+            finished=finished if finished else None,
         )
 
         log_json = log.model_dump_json()

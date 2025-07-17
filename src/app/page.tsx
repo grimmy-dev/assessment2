@@ -6,9 +6,9 @@ import Uploader from "@/components/uploader";
 export default function Home() {
   return (
     <MaxWidthWrapper>
-      <HeroSection/>
-      <Uploader/>
-      <Predictor/>
+      <HeroSection />
+      <Uploader />
+      <Predictor />
     </MaxWidthWrapper>
   );
 }

@@ -1,0 +1,401 @@
+age,income,gender,owns_car,city,buy_product
+56,31998,female,no,New York,0
+46,68020,male,no,San Francisco,0
+32,52247,female,yes,San Francisco,0
+60,52113,female,no,New York,0
+25,55316,female,no,San Francisco,1
+38,21795,male,no,San Francisco,0
+56,64495,male,no,Austin,0
+36,42335,male,yes,Chicago,0
+40,68155,female,yes,San Francisco,0
+28,47731,female,no,San Francisco,0
+28,44382,male,yes,San Francisco,0
+41,30631,female,yes,Austin,0
+53,38517,female,yes,Chicago,0
+57,56334,female,yes,New York,0
+41,30381,female,yes,Austin,0
+20,20141,female,no,Austin,0
+39,37136,male,yes,Chicago,0
+19,62600,female,yes,Chicago,0
+41,76719,male,yes,Austin,0
+61,39838,female,yes,New York,0
+47,26767,male,no,Austin,0
+55,44853,female,no,Chicago,0
+19,52757,male,no,New York,0
+38,58668,female,no,Chicago,1
+50,82019,male,yes,New York,0
+29,53402,female,no,San Francisco,0
+39,74831,male,yes,Chicago,0
+61,43056,female,yes,Chicago,0
+42,51298,male,yes,Austin,0
+44,41106,male,yes,Chicago,0
+59,39799,female,yes,Chicago,0
+45,46048,female,no,San Francisco,0
+33,45790,male,no,Chicago,0
+32,40940,female,no,San Francisco,0
+64,41761,male,no,San Francisco,0
+61,66451,male,yes,San Francisco,0
+20,81696,male,no,San Francisco,1
+54,42523,female,yes,New York,0
+24,45134,male,no,Austin,0
+38,57869,male,yes,New York,0
+26,97805,female,yes,Chicago,0
+56,51262,female,no,New York,0
+35,64589,female,yes,New York,0
+21,73167,female,yes,Chicago,0
+42,55161,male,no,Chicago,0
+31,63893,male,yes,Chicago,0
+26,59117,male,no,New York,1
+43,65487,male,no,New York,0
+19,34483,female,no,Chicago,0
+37,53064,male,yes,Austin,0
+45,57218,male,yes,Austin,0
+64,57005,female,yes,San Francisco,0
+24,67055,male,no,Chicago,1
+61,56703,male,yes,San Francisco,0
+25,32825,male,no,Austin,0
+64,58869,male,no,San Francisco,0
+52,36753,male,yes,Chicago,0
+31,39509,male,no,Chicago,0
+34,43722,female,yes,Chicago,0
+53,48328,female,yes,New York,0
+57,26844,male,yes,San Francisco,0
+21,66753,male,yes,Austin,0
+19,32667,female,yes,Austin,0
+23,73551,male,no,Austin,1
+59,33125,male,no,New York,0
+21,69228,male,no,New York,1
+46,49573,female,yes,Chicago,0
+35,24253,male,yes,Austin,0
+43,34355,female,yes,New York,0
+61,69897,male,no,Chicago,0
+51,56729,female,yes,Austin,0
+27,48819,female,no,San Francisco,0
+53,16748,male,no,Chicago,0
+31,70843,female,yes,New York,0
+48,78056,male,yes,New York,0
+32,75320,female,no,Chicago,1
+25,40771,male,yes,Chicago,0
+31,55741,male,no,New York,1
+40,57382,female,yes,San Francisco,0
+57,27088,male,yes,Austin,0
+38,52707,male,no,San Francisco,0
+33,66065,female,yes,Chicago,0
+62,61467,male,no,San Francisco,0
+35,33332,male,yes,New York,0
+64,37060,female,no,Chicago,0
+41,61858,female,no,Austin,0
+43,59492,male,yes,New York,0
+42,16187,male,no,New York,0
+62,13151,female,yes,Austin,0
+58,48852,female,yes,Austin,0
+46,41155,male,yes,San Francisco,0
+32,45525,female,no,Chicago,0
+62,43830,male,no,Austin,0
+18,64760,male,yes,Austin,0
+42,51553,male,yes,Chicago,0
+24,54014,male,no,Austin,0
+26,29865,male,yes,Austin,0
+41,-461,female,yes,San Francisco,0
+18,66853,female,no,New York,1
+61,82148,female,yes,New York,0
+25,44861,female,no,New York,0
+41,53739,male,yes,New York,0
+28,54867,male,no,Austin,0
+34,75129,male,yes,Chicago,0
+25,63334,male,yes,Chicago,0
+52,57440,female,no,San Francisco,0
+52,50833,male,yes,San Francisco,0
+50,50903,male,no,Austin,0
+22,28408,female,yes,Chicago,0
+59,44247,female,no,Chicago,0
+56,63293,female,no,New York,0
+58,46494,female,no,Austin,0
+45,50665,male,no,Austin,0
+24,32358,male,yes,New York,0
+26,56682,female,yes,Austin,0
+25,28073,male,no,Austin,0
+29,54348,male,no,San Francisco,0
+51,47191,male,no,Chicago,0
+50,23850,female,yes,Austin,0
+40,66042,male,yes,San Francisco,0
+41,47542,female,yes,Chicago,0
+54,77911,male,yes,New York,0
+52,72173,male,no,San Francisco,0
+61,36807,male,no,San Francisco,0
+57,38124,female,no,Chicago,0
+39,32420,male,yes,New York,0
+44,26203,female,yes,San Francisco,0
+52,43667,female,yes,Austin,0
+18,71656,female,no,Austin,1
+52,21276,male,no,Austin,0
+54,62779,male,yes,New York,0
+64,61525,male,no,San Francisco,0
+31,58320,male,yes,Austin,0
+20,60997,female,yes,New York,0
+18,33436,female,no,Austin,0
+22,61423,female,yes,Chicago,0
+43,41761,male,no,San Francisco,0
+31,13112,female,yes,San Francisco,0
+56,50861,male,no,New York,0
+44,37338,female,no,New York,0
+26,70382,male,no,San Francisco,1
+32,45704,male,yes,Austin,0
+32,50684,female,yes,Austin,0
+43,55837,female,no,Chicago,0
+59,45988,female,no,Austin,0
+30,48442,female,yes,New York,0
+49,62653,male,yes,New York,0
+56,34005,female,yes,Austin,0
+49,39472,female,no,New York,0
+21,35493,female,yes,San Francisco,0
+47,71551,male,yes,San Francisco,0
+54,39474,male,no,Austin,0
+40,47850,female,yes,San Francisco,0
+56,40990,male,yes,San Francisco,0
+62,45377,female,yes,Chicago,0
+32,38938,male,no,Chicago,0
+60,56940,male,no,San Francisco,0
+46,34387,male,no,Austin,0
+53,29713,male,no,Chicago,0
+30,41623,female,no,New York,0
+49,38026,female,no,New York,0
+24,29932,female,no,New York,0
+39,45149,male,yes,Austin,0
+45,25098,female,yes,San Francisco,0
+19,75916,female,no,New York,1
+59,27610,female,yes,Austin,0
+62,40305,male,yes,Chicago,0
+23,43946,male,no,San Francisco,0
+45,75270,male,yes,Chicago,0
+45,24045,female,yes,Austin,0
+61,52130,female,yes,New York,0
+61,65557,female,yes,New York,0
+37,45353,male,yes,Austin,0
+47,32452,male,no,New York,0
+28,48380,female,no,San Francisco,0
+45,72906,male,no,Austin,0
+42,40763,male,yes,Chicago,0
+56,71542,male,no,Austin,0
+50,53880,male,yes,San Francisco,0
+18,68487,female,yes,San Francisco,0
+44,53280,male,yes,Austin,0
+30,42734,male,yes,Austin,0
+58,74582,male,no,New York,0
+20,53378,male,no,San Francisco,0
+56,52496,female,yes,Austin,0
+23,62113,female,no,Austin,1
+25,63862,male,yes,San Francisco,0
+44,62192,male,no,Austin,0
+26,29739,male,no,New York,0
+54,40441,male,yes,San Francisco,0
+50,40152,male,no,New York,0
+59,38313,male,yes,New York,0
+61,36918,female,no,New York,0
+41,39934,male,yes,New York,0
+32,55039,female,yes,San Francisco,0
+49,57416,female,no,New York,0
+49,49975,male,no,New York,0
+41,43609,female,yes,Austin,0
+58,69131,female,no,San Francisco,0
+29,48626,female,no,San Francisco,0
+56,64056,female,yes,Chicago,0
+19,41460,female,yes,San Francisco,0
+20,56205,female,no,San Francisco,1
+54,70131,male,yes,Chicago,0
+34,10868,female,yes,San Francisco,0
+19,40173,female,yes,San Francisco,0
+19,58906,female,no,San Francisco,1
+45,68192,male,no,San Francisco,0
+40,53046,female,yes,Chicago,0
+54,50743,male,no,San Francisco,0
+49,74158,female,yes,San Francisco,0
+50,69109,male,no,Chicago,0
+18,36971,male,yes,Austin,0
+36,51746,female,yes,New York,0
+19,55402,female,no,Austin,1
+61,75778,male,yes,Chicago,0
+43,62991,female,no,New York,0
+49,48446,male,no,Chicago,0
+23,53301,male,yes,Chicago,0
+49,21741,male,yes,San Francisco,0
+21,64529,male,no,New York,1
+28,59685,male,yes,San Francisco,0
+34,68182,female,yes,New York,0
+55,47839,male,yes,Chicago,0
+41,51920,male,yes,Chicago,0
+22,42779,female,yes,Austin,0
+51,32779,male,no,New York,0
+23,40966,female,no,San Francisco,0
+39,22710,female,yes,Austin,0
+28,63719,female,yes,Austin,0
+33,17376,male,yes,Austin,0
+50,80482,male,no,San Francisco,0
+26,23538,male,yes,Austin,0
+23,72498,female,no,San Francisco,1
+33,36379,male,no,Austin,0
+46,58415,female,no,San Francisco,0
+20,38713,male,yes,Chicago,0
+37,75106,female,no,Chicago,1
+53,50655,male,yes,Chicago,0
+36,66105,male,no,Chicago,1
+43,51140,male,yes,Chicago,0
+20,55294,female,no,Austin,1
+36,59241,female,yes,Austin,0
+37,42069,male,no,Austin,0
+49,30795,male,yes,San Francisco,0
+24,30475,female,yes,San Francisco,0
+58,50762,female,yes,San Francisco,0
+50,42670,female,yes,San Francisco,0
+57,17812,male,no,Chicago,0
+56,57694,female,no,Chicago,0
+35,31722,male,yes,Chicago,0
+57,32595,female,no,New York,0
+18,49375,male,yes,Austin,0
+28,36498,female,yes,San Francisco,0
+45,51837,female,no,San Francisco,0
+42,79601,female,yes,Chicago,0
+40,44314,female,yes,San Francisco,0
+48,34106,female,no,San Francisco,0
+47,52722,male,yes,Austin,0
+59,38371,female,yes,Chicago,0
+52,50356,female,yes,Austin,0
+24,54734,female,yes,New York,0
+33,49472,male,no,New York,0
+43,50848,female,no,New York,0
+19,52881,male,no,Chicago,0
+18,73956,female,yes,San Francisco,0
+29,46206,female,yes,Chicago,0
+22,51911,male,no,Chicago,0
+54,63002,female,yes,San Francisco,0
+49,57065,male,yes,Austin,0
+26,44626,male,yes,New York,0
+58,63527,female,yes,Austin,0
+52,36931,male,no,New York,0
+36,46598,female,no,Chicago,0
+33,38433,female,no,New York,0
+20,58642,male,yes,Chicago,0
+37,67843,male,no,Austin,1
+41,53350,male,no,Chicago,0
+50,51128,male,yes,Austin,0
+41,36874,female,yes,San Francisco,0
+28,39461,female,no,San Francisco,0
+25,32101,male,no,San Francisco,0
+53,17349,female,no,Chicago,0
+55,44134,female,no,San Francisco,0
+57,45528,female,yes,New York,0
+37,82592,female,no,Austin,1
+52,73442,male,no,Austin,0
+42,58334,male,yes,New York,0
+52,81267,female,no,Chicago,0
+42,70863,male,yes,Chicago,0
+46,19886,male,yes,Austin,0
+35,66011,male,yes,San Francisco,0
+63,60671,female,no,Chicago,0
+35,45659,female,no,Chicago,0
+19,28771,female,yes,New York,0
+52,58931,male,no,New York,0
+33,18813,female,no,San Francisco,0
+58,49677,female,yes,Chicago,0
+53,40743,male,yes,Chicago,0
+50,31117,female,no,New York,0
+21,67832,female,yes,Chicago,0
+50,49380,male,no,Austin,0
+31,52609,male,no,New York,0
+38,63618,male,no,San Francisco,1
+37,49868,female,no,New York,0
+25,56771,female,yes,Chicago,0
+24,62237,female,yes,San Francisco,0
+20,58501,male,yes,New York,0
+34,54289,male,yes,Austin,0
+50,76746,female,no,Austin,0
+29,68629,female,no,New York,1
+39,48713,male,yes,Austin,0
+39,36354,male,no,Austin,0
+63,59579,male,no,Austin,0
+47,53237,male,no,San Francisco,0
+55,75634,female,yes,Austin,0
+55,64812,male,yes,Austin,0
+62,61463,female,yes,Austin,0
+25,50194,female,no,San Francisco,0
+44,36864,female,yes,New York,0
+44,47030,male,yes,Chicago,0
+51,57152,male,yes,Austin,0
+38,24056,male,yes,New York,0
+47,68625,male,yes,Austin,0
+50,81005,female,yes,San Francisco,0
+45,20825,male,no,New York,0
+64,28996,male,no,San Francisco,0
+50,53444,female,yes,Austin,0
+22,41261,male,yes,Austin,0
+36,53913,female,no,San Francisco,0
+21,48924,female,no,Chicago,0
+52,34642,female,yes,San Francisco,0
+34,69326,female,yes,Austin,0
+61,56967,female,yes,San Francisco,0
+45,41603,female,yes,Chicago,0
+47,72575,female,no,San Francisco,0
+46,42373,female,yes,Chicago,0
+63,31372,male,yes,Chicago,0
+23,52752,male,yes,San Francisco,0
+52,55297,male,yes,San Francisco,0
+58,57978,male,no,New York,0
+54,60445,female,no,Austin,0
+41,57741,male,no,Chicago,0
+46,57132,female,yes,New York,0
+63,41393,male,yes,San Francisco,0
+48,39788,male,no,Austin,0
+52,61135,male,yes,New York,0
+50,53651,female,yes,Chicago,0
+38,62303,male,no,New York,1
+49,24390,female,no,Chicago,0
+40,42488,female,no,San Francisco,0
+50,78605,male,no,Austin,0
+20,58287,male,yes,Austin,0
+35,54433,male,yes,Austin,0
+42,60618,female,no,San Francisco,0
+59,83126,male,yes,Chicago,0
+48,79970,female,no,San Francisco,0
+20,26307,female,no,Austin,0
+57,31842,male,yes,San Francisco,0
+63,25798,male,no,San Francisco,0
+41,38793,female,yes,San Francisco,0
+49,50823,female,yes,Chicago,0
+64,53630,female,yes,New York,0
+39,27042,male,yes,New York,0
+40,21989,female,no,San Francisco,0
+19,38528,male,yes,New York,0
+44,63742,female,no,New York,0
+59,66355,female,no,San Francisco,0
+19,75587,male,no,San Francisco,1
+43,49515,female,no,Austin,0
+34,62422,male,yes,New York,0
+57,65148,male,yes,Chicago,0
+50,42547,female,no,San Francisco,0
+26,55817,male,no,Austin,1
+60,59880,male,yes,Chicago,0
+56,36362,female,no,New York,0
+46,74631,male,yes,Austin,0
+59,49417,male,no,San Francisco,0
+43,51305,male,yes,Chicago,0
+52,35789,female,no,San Francisco,0
+42,38308,male,no,New York,0
+41,17052,female,yes,Chicago,0
+30,50827,female,no,New York,0
+24,87585,male,no,New York,1
+53,34720,male,yes,Austin,0
+62,94642,male,no,San Francisco,0
+37,71213,female,yes,Chicago,0
+18,42896,male,yes,New York,0
+25,50408,male,no,New York,0
+63,47973,male,no,Chicago,0
+33,75592,male,no,New York,1
+31,57755,male,no,Austin,1
+29,67729,female,no,Austin,1
+40,55372,female,no,Austin,0
+32,48320,male,no,Austin,0
+45,54896,male,yes,New York,0
+51,43895,male,no,Chicago,0
+19,28216,male,yes,Chicago,0
+49,62205,female,no,Chicago,0
+40,27482,male,no,Chicago,0

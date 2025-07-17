@@ -10,12 +10,14 @@ from fastapi import (
     WebSocketDisconnect,
     HTTPException,
 )
+import polars as pl
 from fastapi.middleware.cors import CORSMiddleware
 
+from .routes.profiler import DataProfiler
 from .connection_manager import ConnectionManager
 from .routes.ingestion_pipeline import CSVProcessor
 
-app = FastAPI(title="CSV Processing API")
+app = FastAPI(title="CSV Data Profiler API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -95,32 +97,6 @@ async def upload_csv(file: UploadFile = File(...)):
     }
 
 
-@app.get("/result/{task_id}")
-async def get_result(task_id: str):
-    """Get processing result"""
-    result = csv_processor.get_result(task_id)
-    if not result:
-        raise HTTPException(
-            status_code=404, detail="Task not found or still processing"
-        )
-    return result
-
-
-@app.get("/status/{task_id}")
-async def get_status(task_id: str):
-    """Get task status"""
-    result = csv_processor.get_result(task_id)
-    active_tasks = csv_processor.get_active_tasks()
-
-    return {
-        "task_id": task_id,
-        "is_processing": task_id in active_tasks,
-        "has_result": result is not None,
-        "websocket_connected": connection_manager.get_connection_status(task_id),
-        "queued_messages": connection_manager.get_queued_message_count(task_id),
-    }
-
-
 @app.delete("/cancel/{task_id}")
 async def cancel_task(task_id: str):
     """Cancel a running task"""
@@ -146,24 +122,101 @@ async def health():
     }
 
 
-@app.get("/preview/{task_id}")
-async def get_data_preview(task_id: str, n: int = 200):
+@app.get("/profile/{task_id}")
+async def get_data_profile(task_id: str):
+    """Get comprehensive data profile"""
+    df = csv_processor.get_processed_data(task_id)
+    if df is None:
+        raise HTTPException(
+            status_code=404, detail="Task not found or data not processed yet"
+        )
+
+    try:
+        profiler = DataProfiler(df)
+        profile = profiler.generate_profile()
+
+        return {
+            "task_id": task_id,
+            "profile": profile,
+            "success": True,
+            "message": "Profile generated successfully",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error generating profile: {str(e)}"
+        )
+
+
+@app.get("/chart-data/{task_id}")
+async def get_chart_data(
+    task_id: str,
+    x_axis: str,
+    y_axis: str = None,
+    chart_type: str = "scatter",
+    limit: int = 200,
+):
+    """Get data for chart visualization"""
     df = csv_processor.get_processed_data(task_id)
     if df is None:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # Clamp to reasonable max
-    n = min(n, 1000)
     try:
-        return {"data": df.head(n).to_dicts(), "columns": df.columns}
+        # Validate columns exist
+        if x_axis not in df.columns:
+            raise HTTPException(status_code=400, detail=f"Column '{x_axis}' not found")
+
+        if y_axis and y_axis not in df.columns:
+            raise HTTPException(status_code=400, detail=f"Column '{y_axis}' not found")
+
+        # Limit data for performance
+        df_limited = df.head(limit)
+
+        if chart_type == "histogram" and not y_axis:
+            # For histogram, we just need x values
+            data = [
+                {"x": val} for val in df_limited[x_axis].to_list() if val is not None
+            ]
+        elif chart_type == "pie":
+            # For pie chart, group by x_axis and count
+            grouped = df_limited.group_by(x_axis).agg(pl.count().alias("count"))
+            data = [
+                {"name": str(row[x_axis]), "value": row["count"]}
+                for row in grouped.to_dicts()
+            ]
+        else:
+            # For scatter, line, bar charts
+            if not y_axis:
+                raise HTTPException(
+                    status_code=400, detail="y_axis required for this chart type"
+                )
+
+            data = []
+            for row in df_limited.to_dicts():
+                x_val = row.get(x_axis)
+                y_val = row.get(y_axis)
+
+                if x_val is not None and y_val is not None:
+                    data.append({"x": x_val, "y": y_val})
+
+        return {
+            "data": data,
+            "x_axis": x_axis,
+            "y_axis": y_axis,
+            "chart_type": chart_type,
+            "total_rows": len(df),
+            "returned_rows": len(data),
+        }
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching preview: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error preparing chart data: {str(e)}"
+        )
 
 
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "CSV Processing API", "version": "1.0.0", "docs": "/docs"}
+    return {"message": "CSV Data Profiler API", "version": "1.0.0", "docs": "/docs"}
 
 
 # Graceful shutdown

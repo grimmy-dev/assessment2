@@ -1,17 +1,3 @@
-# data processing (mainly csv)
-# -- data chunking
-# -- data selection using llm
-# -- data cleaning of selected columns
-# -- test and train split
-# -- invoke ml pipeline (train)
-# data profiling (use ful for logs to show on frontend)
-# -- no of rows and columns
-# -- columns and types
-# -- Outliers
-# -- Skewness
-# -- Pairwise correlations
-# -- Imbalanced columns
-
 import io
 import asyncio
 import json
@@ -124,20 +110,35 @@ class CSVProcessor:
 
             await self.manager.send_log(task_id, "info", "Filled missing values", 75)
 
+            await asyncio.sleep(1)
+
             # Identify potential target columns
             await self.manager.send_log(
                 task_id, "info", "Identifying target columns...", 80
             )
+            excluded_keywords = [
+                "gender",
+                "city",
+                "state",
+                "country",
+                "name",
+                "id",
+                "category",
+            ]
+
             target_columns = []
             for col in df.columns:
                 try:
                     unique_count = df[col].n_unique()
-                    if unique_count < 20 and unique_count > 1:
+                    if any(kw in col.lower() for kw in excluded_keywords):
+                        continue
+                    if unique_count < 10 and unique_count > 1:
                         target_columns.append(col)
                 except Exception:
                     # Skip columns that can't be analyzed
                     continue
 
+            await asyncio.sleep(1)
             await self.manager.send_log(
                 task_id,
                 "info",
@@ -158,12 +159,15 @@ class CSVProcessor:
             )
             self.processing_results[task_id] = result
 
+            await asyncio.sleep(1)
+
             await self.manager.send_log(
                 task_id,
                 "success",
                 "Processing completed successfully!",
                 90,
             )
+            await asyncio.sleep(1)
 
             await self.manager.send_log(
                 task_id,
@@ -171,6 +175,7 @@ class CSVProcessor:
                 json.dumps(result.target_columns),
                 95,
             )
+            await asyncio.sleep(1)
             await self.manager.send_log(
                 task_id,
                 "success",
@@ -209,10 +214,6 @@ class CSVProcessor:
 
         task.add_done_callback(cleanup)
         return task
-
-    def get_result(self, task_id: str) -> ProcessingResult:
-        """Get processing result"""
-        return self.processing_results.get(task_id)
 
     def get_processed_data(self, task_id: str) -> pl.DataFrame:
         """Get processed DataFrame"""

@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -7,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { ArrowUp, ArrowUpIcon, UploadIcon, ZapIcon } from "lucide-react";
+import { ArrowUpIcon, UploadIcon, ZapIcon } from "lucide-react";
 
 const InputTable = () => {
   return (
