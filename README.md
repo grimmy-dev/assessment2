@@ -1,6 +1,8 @@
 # Smart CSV Analyzer & Predictor
-
+<img width="1574" height="874" alt="Aanalyzer" src="https://github.com/user-attachments/assets/ec103f75-2f2a-4a7a-97ea-2faa745c0273" />
 A simple web app that helps you explore CSV files, get quick stats, draw charts, and test predictions—all from your browser. Great for learning and basic data analysis.
+
+[watch demo video](https://drive.google.com/file/d/1Qj3NxcxS-mCWg55kc3SYlgCHoAK75rg9/view?usp=drive_link)
 
 # What Can You Do With This?
 
@@ -30,11 +32,11 @@ cd assessment2
 
 ## 2. Install the Tools
 
-- For the frontend (Next.js):
+For the frontend (Next.js):
   ```sh
   pnpm install
   ```
-- For the backend (FastAPI made simple):
+For the backend (FastAPI made simple):
   ```sh
   pnpm run fastapi-dev
   ```
@@ -47,17 +49,17 @@ cd assessment2
 pnpm run dev:full
 ```
 
-- Go to:
-  - Main App: http://localhost:3000
-  - API Docs: http://localhost:8000/docs
+Go to:
+  - Main App: `http://localhost:3000`
+  - API Docs: `http://localhost:8000/docs`
 
 **Option 2: Run Frontend and Backend Separately**
 
-- Backend:
+Backend:
   ```sh
   pnpm run fastapi-dev
   ```
-- Frontend:
+Frontend:
   ```sh
   pnpm run dev
   ```
@@ -73,4 +75,4 @@ There’s a sample CSV at `/data/testing_dataset.csv` so you can experiment righ
 - [x] Python 3.12 or newer
 - [x] pip (for Python installations)
 
-You’re all set—happy exploring!
+You’re all set—happy exploring :)
