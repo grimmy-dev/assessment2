@@ -373,7 +373,7 @@ const Uploader: React.FC<UploaderProps> = ({
                   <FormField
                     control={form.control}
                     name="file"
-                    render={({ field: { onChange, ...field } }) => (
+                    render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
                         <FormLabel>CSV File Only</FormLabel>
                         <FormControl>
@@ -510,7 +510,7 @@ const Uploader: React.FC<UploaderProps> = ({
                         logs.map((log, index) => (
                           <div
                             key={index}
-                            className="text-xs flex items-start gap-2 mb-1"
+                            className="text-sm flex items-start gap-2 mb-1"
                           >
                             <span className="text-muted-foreground shrink-0">
                               {log.timestamp}
