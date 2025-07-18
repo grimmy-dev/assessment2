@@ -35,6 +35,7 @@ import {
   AlertCircle,
   Loader2,
   X,
+  ArrowUpIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Dashboard from "./dashboard";
@@ -69,13 +70,29 @@ type UploadStatus = "idle" | "uploading" | "success" | "error";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-const Uploader = () => {
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+interface UploaderProps {
+  currentTaskId: string | null;
+  canFetchDashboard: boolean;
+  uploadStatus: UploadStatus;
+  onTaskIdChange: (taskId: string | null) => void;
+  onCanFetchChange: (canFetch: boolean) => void;
+  onUploadStatusChange: (status: UploadStatus) => void;
+  onReset: () => void;
+}
+
+const Uploader: React.FC<UploaderProps> = ({
+  currentTaskId,
+  canFetchDashboard,
+  uploadStatus,
+  onTaskIdChange,
+  onCanFetchChange,
+  onUploadStatusChange,
+  onReset: globalReset,
+}) => {
+  // Local state that doesn't need to be global
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [logs, setLogs] = useState<LogMessage[]>([]);
-  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
-  const [canFetchDashboard, setCanFetchDashboard] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -152,10 +169,10 @@ const Uploader = () => {
 
           if (log.finished === true) {
             if (log.level === "success") {
-              setCanFetchDashboard(true);
-              setUploadStatus("success");
+              onCanFetchChange(true);
+              onUploadStatusChange("success");
             } else if (log.level === "error") {
-              setUploadStatus("error");
+              onUploadStatusChange("error");
             }
             socket.close(1000, "Task completed");
           }
@@ -179,15 +196,15 @@ const Uploader = () => {
         addLog("error", "WebSocket connection error");
       };
     },
-    [addLog, uploadStatus]
+    [addLog, uploadStatus, onCanFetchChange, onUploadStatusChange]
   );
 
   const handleUpload = useCallback(
     async (file: File) => {
-      setUploadStatus("uploading");
+      onUploadStatusChange("uploading");
       setUploadProgress(0);
       setLogs([]);
-      setCurrentTaskId(null);
+      onTaskIdChange(null);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -208,14 +225,14 @@ const Uploader = () => {
         }
 
         const data = await response.json();
-        setCurrentTaskId(data.task_id);
+        onTaskIdChange(data.task_id);
         addLog(
           "success",
           `File uploaded successfully. Task ID: ${data.task_id}`
         );
         connectWebSocket(data.task_id);
       } catch (error) {
-        setUploadStatus("error");
+        onUploadStatusChange("error");
         addLog(
           "error",
           `Upload failed: ${
@@ -224,7 +241,7 @@ const Uploader = () => {
         );
       }
     },
-    [addLog, connectWebSocket]
+    [addLog, connectWebSocket, onTaskIdChange, onUploadStatusChange]
   );
 
   const cancelTask = useCallback(async () => {
@@ -237,13 +254,18 @@ const Uploader = () => {
 
       if (response.ok) {
         addLog("info", "Task cancelled");
-        setUploadStatus("idle");
+        onUploadStatusChange("idle");
         socketRef.current?.close();
       }
     } catch (error) {
-      addLog("error", "Failed to cancel task");
+      addLog(
+        "error",
+        `failed to cancel task: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
-  }, [currentTaskId, addLog]);
+  }, [currentTaskId, addLog, onUploadStatusChange]);
 
   const onSubmit = useCallback(
     async (data: FileFormData) => {
@@ -259,11 +281,9 @@ const Uploader = () => {
     }
 
     form.reset();
-    setUploadStatus("idle");
     setUploadProgress(0);
     setUploadedFile(null);
     setLogs([]);
-    setCurrentTaskId(null);
     setConnectionStatus("disconnected");
 
     if (fileInputRef.current) {
@@ -275,7 +295,10 @@ const Uploader = () => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
-  }, [currentTaskId, uploadStatus, cancelTask, form]);
+
+    // Call the global reset function
+    globalReset();
+  }, [currentTaskId, uploadStatus, cancelTask, form, globalReset]);
 
   const getStatusIcon = () => {
     switch (uploadStatus) {
@@ -350,7 +373,7 @@ const Uploader = () => {
                   <FormField
                     control={form.control}
                     name="file"
-                    render={({ field: { onChange, value, ...field } }) => (
+                    render={({ field: { onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>CSV File Only</FormLabel>
                         <FormControl>
@@ -406,7 +429,7 @@ const Uploader = () => {
                       <Button
                         type="submit"
                         disabled={uploadStatus === "uploading"}
-                        className="flex-1"
+                        className="flex-1 group"
                       >
                         {uploadStatus === "uploading" ? (
                           <>
@@ -415,7 +438,16 @@ const Uploader = () => {
                           </>
                         ) : (
                           <>
-                            <Upload className="size-4 mr-2" />
+                            <div className="size-4 flex flex-col overflow-hidden">
+                              <ArrowUpIcon
+                                strokeWidth="4"
+                                className="size-4 group-hover:-translate-y-4 transition-transform duration-400"
+                              />
+                              <ArrowUpIcon
+                                strokeWidth="4"
+                                className="size-4 group-hover:-translate-y-4 transition-transform duration-800"
+                              />
+                            </div>
                             Upload CSV
                           </>
                         )}

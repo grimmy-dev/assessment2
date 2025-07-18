@@ -1,16 +1,9 @@
 import asyncio
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict
 from fastapi import WebSocket
-from pydantic import BaseModel
 
-
-class LogMessage(BaseModel):
-    timestamp: str
-    level: str  # "info", "success", "error"
-    message: str
-    progress: int = 0
-    finished: Optional[bool] = None  # Add this field
+from .types import LogMessage
 
 
 class ConnectionManager:

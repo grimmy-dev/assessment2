@@ -10,12 +10,23 @@ from fastapi import (
     WebSocketDisconnect,
     HTTPException,
 )
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+import numpy as np
 import polars as pl
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes.profiler import DataProfiler
+from .types import (
+    PredictionRequest,
+    PredictionResponse,
+    TrainModelRequest,
+    TrainModelResponse,
+)
+
 from .connection_manager import ConnectionManager
 from .routes.ingestion_pipeline import CSVProcessor
+from .routes.profiler import DataProfiler
+from .routes.ml_pipeline import MLProcessor
 
 app = FastAPI(title="CSV Data Profiler API")
 
@@ -30,6 +41,7 @@ app.add_middleware(
 # Initialize managers
 connection_manager = ConnectionManager()
 csv_processor = CSVProcessor(connection_manager)
+ml_processor = MLProcessor()
 
 
 @app.websocket("/ws/{task_id}")
@@ -108,18 +120,6 @@ async def cancel_task(task_id: str):
     connection_manager.disconnect(task_id)
 
     return {"message": f"Task {task_id} cancelled"}
-
-
-@app.get("/health")
-async def health():
-    """Health check endpoint"""
-    active_tasks = csv_processor.get_active_tasks()
-    return {
-        "status": "ok",
-        "timestamp": datetime.now().isoformat(),
-        "active_tasks": len(active_tasks),
-        "active_connections": len(connection_manager.active_connections),
-    }
 
 
 @app.get("/profile/{task_id}")
@@ -211,6 +211,136 @@ async def get_chart_data(
         raise HTTPException(
             status_code=500, detail=f"Error preparing chart data: {str(e)}"
         )
+
+
+@app.post("/train", response_model=TrainModelResponse)
+async def train_model(request: TrainModelRequest):
+    """Train a machine learning model"""
+    try:
+        # Get processed data
+        df = csv_processor.get_processed_data(request.task_id)
+        if df is None:
+            raise HTTPException(
+                status_code=404, detail="Task not found or data not processed"
+            )
+
+        # Train model
+        result = ml_processor.train_model(request.task_id, df, request.target_column)
+
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+
+        return TrainModelResponse(**result)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
+
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """Make predictions using trained model"""
+    try:
+        result = ml_processor.predict(request.task_id, request.input_data)
+
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+
+        return JSONResponse(
+            content=jsonable_encoder(
+                result,
+                custom_encoder={
+                    np.integer: lambda x: int(x),
+                    np.floating: lambda x: float(x),
+                    np.ndarray: lambda x: x.tolist(),
+                    np.str_: lambda x: str(x),
+                    np.str_: lambda x: str(x),
+                },
+            )
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@app.get("/model-info/{task_id}")
+async def get_model_info(task_id: str):
+    """Get model information"""
+    info = ml_processor.get_model_info(task_id)
+    if info is None:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return info
+
+
+@app.get("/processed-data/{task_id}")
+async def get_processed_data_info(task_id: str):
+    """Get information about processed data"""
+    try:
+        # Check if task exists at all
+        if task_id not in csv_processor.processing_results:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Task {task_id} not found. Available tasks: {list(csv_processor.processing_results.keys())}",
+            )
+
+        # Check processing result
+        result = csv_processor.processing_results[task_id]
+        if not result.success:
+            raise HTTPException(
+                status_code=400, detail=f"Processing failed: {result.summary}"
+            )
+
+        df = csv_processor.get_processed_data(task_id)
+        if df is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Processed data not found for task {task_id}. Processing may still be in progress.",
+            )
+
+        return {
+            "columns": list(df.columns),
+            "column_types": {col: str(df[col].dtype) for col in df.columns},
+            "sample_values": {col: df[col].head(3).to_list() for col in df.columns},
+            "shape": df.shape,
+            "processing_result": {
+                "success": result.success,
+                "summary": result.summary,
+                "target_columns": result.target_columns,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get data info: {str(e)}"
+        )
+
+
+@app.get("/debug/{task_id}")
+async def debug_task(task_id: str):
+    """Debug endpoint to check task status"""
+    return {
+        "task_id": task_id,
+        "has_processed_data": task_id in csv_processor.processed_data,
+        "has_processing_result": task_id in csv_processor.processing_results,
+        "is_active_task": task_id in csv_processor.active_tasks,
+        "active_tasks": list(csv_processor.active_tasks.keys()),
+        "processed_data_keys": list(csv_processor.processed_data.keys()),
+        "processing_results_keys": list(csv_processor.processing_results.keys()),
+        "active_connections": list(connection_manager.active_connections.keys()),
+    }
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint"""
+    active_tasks = csv_processor.get_active_tasks()
+    return {
+        "status": "ok",
+        "timestamp": datetime.now().isoformat(),
+        "active_tasks": len(active_tasks),
+        "active_connections": len(connection_manager.active_connections),
+    }
 
 
 @app.get("/")

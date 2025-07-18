@@ -3,19 +3,10 @@ import asyncio
 import json
 from typing import Dict, List
 import polars as pl
-from pydantic import BaseModel
+
+from ..types import ProcessingResult
 
 from ..connection_manager import ConnectionManager
-
-
-class ProcessingResult(BaseModel):
-    task_id: str
-    success: bool
-    original_rows: int
-    cleaned_rows: int
-    columns: List[str]
-    target_columns: List[str]
-    summary: str
 
 
 class CSVProcessor:

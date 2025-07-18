@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "fastapi-dev": "cd src && python -m uvicorn api.main:app --reload --port 8000",
+    "fastapi-dev": "pip install -r requirements.txt && cd src && python -m uvicorn api.main:app --reload --port 8000",
     "dev": "next dev --turbopack",
-    "dev:full": "concurrently \"pnpm run dev\" \"pnpm run fastapi-dev\"",
+    "dev:full": "concurrently \"npm run dev\" \"npm run fastapi-dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,6 +13,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-select": "^2.2.5",

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import UniversalChart from "./charts/chart-builder";
+import ChartLoader from "./charts/loading";
 
 interface ColumnAnalysis {
   null_count: number;
@@ -185,46 +186,48 @@ const Dashboard: React.FC<DashboardProps> = ({ taskId, canFetch }) => {
   const renderContent = () => {
     if (!taskId) {
       return (
-        <div className="text-center space-y-4">
+        <ChartLoader>
           <Link
             href="#uploader"
-            className="text-muted-foreground flex items-center justify-center gap-1"
+            className="text-accent-foreground flex items-center justify-center gap-1"
           >
             Please upload a CSV file to see your data visualizations
             <ArrowUpIcon className="size-4" />
           </Link>
-        </div>
+        </ChartLoader>
       );
     }
 
     if (loading || !canFetch) {
       return (
-        <div className="flex items-center justify-center space-x-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
+        <ChartLoader>
+          <Loader2 className="size-5 animate-spin mr-2" />
           <span>Analyzing your data and generating insights...</span>
-        </div>
+        </ChartLoader>
       );
     }
 
     if (error) {
       return (
-        <Alert className="max-w-md mx-auto">
-          <AlertDescription className="space-y-4">
-            <span className="text-sm text-destructive text-center w-full flex items-center justify-center gap-1">
-              <AlertTriangleIcon className="size-4" />
-              {error}
-            </span>
-            <Button
-              onClick={fetchDashboardData}
-              className="w-full mt-auto"
-              size="sm"
-              variant="outline"
-            >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              Retry
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <ChartLoader>
+          <Alert className="max-w-md mx-auto bg-background">
+            <AlertDescription className="space-y-4">
+              <span className="text-sm text-destructive text-center w-full flex items-center justify-center gap-1">
+                <AlertTriangleIcon className="size-4" />
+                {error || "Something went wrong try again!"}
+              </span>
+              <Button
+                onClick={fetchDashboardData}
+                className="w-full mt-auto"
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </ChartLoader>
       );
     }
 

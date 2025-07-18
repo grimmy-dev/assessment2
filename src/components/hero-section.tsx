@@ -18,7 +18,10 @@ const HeroSection = () => {
       <Button asChild className="w-full sm:w-fit group font-semibold" size="lg">
         <Link href={"#uploader"}>
           Get started
-          <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform duration-200" />
+          <div className="flex flex-row-reverse size-4 overflow-hidden">
+          <ArrowRightIcon strokeWidth='4' className="size-4 group-hover:translate-x-4 transition-transform duration-400" />
+          <ArrowRightIcon strokeWidth='4' className="size-4 group-hover:translate-x-4 transition-transform duration-800" />
+          </div>
         </Link>
       </Button>
     </div>
