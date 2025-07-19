@@ -1,91 +1,120 @@
-## `ConnectionManager` Class
+# ConnectionManager Documentation
 
-This class manages WebSocket connections for real-time communication during tasks like CSV processing or model training.
-It handles:
+## Overview
 
-- Connecting and disconnecting clients
-- Sending live log updates
-- Queuing messages if a connection isn’t ready yet
+The `ConnectionManager` class handles WebSocket connections for real-time communication between the server and clients. It manages multiple connections, queues messages when connections aren't available, and provides logging functionality.
 
----
+## What It Does
 
-### `__init__(self)`
+- Manages WebSocket connections for different tasks
+- Stores messages when connections aren't ready
+- Sends real-time log messages to connected clients
+- Handles connection failures gracefully
 
-Initializes the manager.
+## Class Structure
 
-- `active_connections`: Keeps track of connected WebSocket clients by `task_id`.
-- `message_queues`: Stores log messages if the client hasn't connected yet.
-- `connection_locks`: (Optional use) You can use this for thread-safe operations per task.
+### Properties
 
----
+- `active_connections`: Stores currently connected WebSocket clients by task ID
+- `message_queues`: Holds messages for tasks that don't have active connections yet
+- `connection_locks`: Manages thread safety for each connection
 
-### `async def connect(self, websocket: WebSocket, task_id: str)`
+## Methods
 
-Handles a new WebSocket connection.
+### `__init__()`
 
-#### What it does:
+Sets up empty dictionaries to track connections, message queues, and locks.
 
-- Accepts the WebSocket connection.
-- Stores it in `active_connections`.
-- Sends any messages that were queued before the client connected.
+### `connect(websocket, task_id)`
 
-#### Parameters:
+**Purpose**: Establishes a new WebSocket connection
 
-- `websocket`: The client's WebSocket connection.
-- `task_id`: A unique ID for this processing task/client.
+**What it does**:
 
----
+1. Accepts the WebSocket connection
+2. Stores the connection using the task ID
+3. Sends any messages that were queued while waiting for connection
+4. Clears the message queue after sending
 
-### `def disconnect(self, task_id: str)`
+**Parameters**:
 
-Closes the WebSocket connection and cleans up resources.
+- `websocket`: The WebSocket connection object
+- `task_id`: Unique identifier for the task/connection
 
-#### What it does:
+### `disconnect(task_id)`
 
-- Removes the task’s connection and message queue if they exist.
-- Cleans up any locks for that task.
+**Purpose**: Cleanly removes a connection and its data
 
-#### Parameters:
+**What it does**:
 
-- `task_id`: The ID of the client/task to disconnect.
+1. Removes the connection from active connections
+2. Deletes any queued messages
+3. Cleans up the connection lock
 
----
+**Parameters**:
 
-### `async def send_log(...)`
+- `task_id`: ID of the connection to disconnect
 
-Sends a log message to the frontend in real-time.
+### `send_log(task_id, level, message, progress=0, finished=False)`
 
-#### Parameters:
+**Purpose**: Sends log messages to clients in real-time
 
-- `task_id`: The task/client ID to send the log to.
-- `level`: Log level (e.g., `"info"`, `"error"`, `"success"`).
-- `message`: The message to display.
-- `progress`: (optional) A number from 0 to 100 to show progress.
-- `finished`: (optional) If `True`, marks this task as finished.
+**What it does**:
 
-#### What it does:
+1. Creates a log message with timestamp, level, content, and progress
+2. If connection exists: sends message immediately
+3. If no connection: queues the message for later
+4. Limits queue size to 50 messages to prevent memory issues
 
-- Creates a `LogMessage` with timestamp and progress info.
-- If the client is connected, it sends the message immediately.
-- If not connected yet, it queues the message.
-- It also limits queued messages to prevent memory overload.
+**Parameters**:
 
----
+- `task_id`: Target connection ID
+- `level`: Log level (info, warning, error, etc.)
+- `message`: The actual log content
+- `progress`: Optional progress percentage (0-100)
+- `finished`: Whether the task is complete
 
-### `def get_connection_status(self, task_id: str) -> bool`
+### `get_connection_status(task_id)`
 
-Checks if a client is currently connected.
+**Purpose**: Check if a specific task has an active connection
 
-#### Returns:
+**Returns**: `True` if connected, `False` if not
 
-- `True` if the client is connected, `False` otherwise.
+### `get_queued_message_count(task_id)`
 
----
+**Purpose**: Get number of messages waiting to be sent
 
-### `def get_queued_message_count(self, task_id: str) -> int`
+**Returns**: Number of queued messages for the task
 
-Gets the number of log messages waiting to be sent (if the client hasn’t connected yet).
+## Key Features
 
-#### Returns:
+### Message Queuing
 
-- The number of queued messages for the given task.
+If a client isn't connected yet, messages are stored in a queue. When the client connects later, all queued messages are sent immediately.
+
+### Memory Management
+
+Message queues are limited to 100 messages. If this limit is exceeded, only the most recent 50 messages are kept.
+
+### Error Handling
+
+If sending a message fails, the connection is automatically cleaned up to prevent stuck connections.
+
+## Usage Example
+
+```python
+# Create manager
+manager = ConnectionManager()
+
+# Connect a client
+await manager.connect(websocket, "task_123")
+
+# Send a log message
+await manager.send_log("task_123", "info", "Processing started", progress=10)
+
+# Check connection status
+is_connected = manager.get_connection_status("task_123")
+
+# Disconnect when done
+manager.disconnect("task_123")
+```

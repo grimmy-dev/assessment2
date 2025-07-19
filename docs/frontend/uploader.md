@@ -2,72 +2,235 @@
 
 ## Overview
 
-The **Uploader** component handles CSV file upload, starts backend processing via the `/upload` endpoint,
-opens a WebSocket connection for live log updates, shows upload progress, and manages upload lifecycle
-including reset and cancel.
+The Uploader component is a React component that handles CSV file uploads with real-time progress tracking. It provides a complete user interface for selecting, uploading, and monitoring the processing of CSV files through WebSocket connections.
 
-### Props
+## Key Features
 
-- `currentTaskId`: Backend task ID from upload
-- `canFetchDashboard`: Indicates if data profile can be fetched
-- `uploadStatus`: Tracks upload state (`idle`, `uploading`, `success`, `error`)
-- `onTaskIdChange`: Callback to update parent with new `taskId`
-- `onCanFetchChange`: Callback to mark readiness for dashboard
-- `onUploadStatusChange`: Callback to update upload status
-- `onReset`: Callback to reset global state (`taskId`, fetch flags`)
+- **File Upload**: Drag-and-drop or click to select CSV files
+- **Real-time Progress**: Live updates during file processing
+- **WebSocket Connection**: Real-time communication with the server
+- **Form Validation**: Client-side validation for file type and size
+- **Error Handling**: Comprehensive error messages and recovery
+- **Log Display**: Collapsible log viewer for debugging
+- **Task Management**: Cancel running tasks and reset the interface
 
----
+## Component Structure
 
-## Functions
+### Props Interface
 
-### `scrollToBottom`
+```typescript
+interface UploaderProps {
+  currentTaskId: string | null; // Current processing task ID
+  canFetchDashboard: boolean; // Whether dashboard can load data
+  uploadStatus: UploadStatus; // Current upload state
+  onTaskIdChange: (taskId: string | null) => void; // Task ID change handler
+  onCanFetchChange: (canFetch: boolean) => void; // Dashboard state handler
+  onUploadStatusChange: (status: UploadStatus) => void; // Status change handler
+  onReset: () => void; // Global reset handler
+}
+```
 
-Scrolls the logs container to the bottom when new log messages arrive.
+### Upload Status Types
 
----
+- `"idle"`: No upload in progress
+- `"uploading"`: File is being processed
+- `"success"`: Upload completed successfully
+- `"error"`: Upload failed
 
-### `addLog`
+## Core Functionality
 
-Adds a log message with a timestamp and optional progress value.
+### File Validation
 
----
+The component validates files using Zod schema:
 
-### `connectWebSocket`
+- **File Type**: Must be CSV (.csv extension)
+- **File Size**: Maximum 50MB
+- **File Required**: At least one file must be selected
 
-Opens a WebSocket connection using the task ID to receive real-time log updates.
+### WebSocket Connection
 
----
+**Purpose**: Real-time communication during processing
 
-### `handleUpload`
+**How it works**:
 
-Uploads the selected CSV file to the backend and connects to WebSocket.
+1. Connects when upload starts using task ID
+2. Receives progress updates and log messages
+3. Auto-reconnects if connection is lost
+4. Closes when processing completes
 
----
+**Message Format**:
 
-### `cancelTask`
+```typescript
+type LogMessage = {
+  timestamp: string;
+  level: "info" | "success" | "error";
+  message: string;
+  progress?: number;
+  finished?: boolean;
+};
+```
 
-Sends a cancel request to the backend and closes the WebSocket connection.
+### Upload Process
 
----
+1. **File Selection**: User selects CSV file through file input
+2. **Validation**: Client-side validation checks file type and size
+3. **Upload**: File is sent to server via FormData
+4. **WebSocket**: Connection established for real-time updates
+5. **Processing**: Server processes file with live progress updates
+6. **Completion**: Success or error state with appropriate UI updates
 
-### `onSubmit`
+## UI Components
 
-Called when the file form is submitted; triggers the upload process.
+### File Upload Card
 
----
+- **Dynamic Styling**: Changes color based on upload status
+  - Green: Success
+  - Red: Error
+  - Blue: Processing
+  - Default: Idle
+- **Status Icons**: Visual indicators for each state
+- **Progress Bar**: Shows processing progress percentage
 
-### `handleReset`
+### File Display
 
-Resets uploader state, cancels any running task, and clears form and logs.
+When a file is selected:
 
----
+- Shows file name and size
+- File icon for visual confirmation
+- File size in MB format
 
-### `getStatusIcon`
+### Action Buttons
 
-Returns a status icon based on the current upload status.
+**Upload Button**:
 
----
+- Disabled during processing
+- Shows loading spinner when active
+- Animated upload icon on hover
 
-### `getCardStyle`
+**Cancel Button**:
 
-Returns conditional card styling based on upload status.
+- Only visible during upload
+- Cancels current processing task
+
+**View Data Button**:
+
+- Only visible after successful upload
+- Links to dashboard section
+
+**Reset Button**:
+
+- Clears all data and starts over
+- Available after upload attempt
+
+### Logs Section
+
+**Collapsible Accordion**:
+
+- Shows number of log entries
+- Auto-scrolls to bottom for new messages
+- Color-coded log levels (info=blue, success=green, error=red)
+- Timestamps for each log entry
+
+## State Management
+
+### Local State
+
+- `uploadProgress`: Current processing percentage
+- `uploadedFile`: Selected file information
+- `logs`: Array of log messages
+- `connectionStatus`: WebSocket connection state
+
+### Global State (via Props)
+
+- `currentTaskId`: Shared across components
+- `canFetchDashboard`: Controls dashboard data loading
+- `uploadStatus`: Overall upload state
+
+## Error Handling
+
+### Network Errors
+
+- Displays error messages in logs
+- Automatically attempts WebSocket reconnection
+- Graceful fallback for failed uploads
+
+### Validation Errors
+
+- Real-time form validation
+- Clear error messages for:
+  - Wrong file type
+  - File too large
+  - No file selected
+
+### Processing Errors
+
+- Server errors displayed in logs
+- WebSocket disconnection handling
+- Task cancellation support
+
+## Accessibility Features
+
+- **Form Labels**: Proper labeling for screen readers
+- **Keyboard Navigation**: Full keyboard support
+- **Focus Management**: Logical tab order
+- **Color Contrast**: Sufficient contrast for all states
+- **Error Announcements**: Form validation messages
+
+## Integration
+
+### API Integration
+
+- **Upload Endpoint**: `POST /upload`
+- **Cancel Endpoint**: `DELETE /cancel/{taskId}`
+- **WebSocket**: `ws://localhost:8000/ws/{taskId}`
+
+### Dashboard Integration
+
+- Passes task ID to Dashboard component
+- Controls when dashboard can fetch data
+- Seamless transition from upload to data view
+
+## Usage Example
+
+```jsx
+function App() {
+  const [taskId, setTaskId] = useState(null);
+  const [canFetch, setCanFetch] = useState(false);
+  const [status, setStatus] = useState("idle");
+
+  const handleReset = () => {
+    setTaskId(null);
+    setCanFetch(false);
+    setStatus("idle");
+  };
+
+  return (
+    <Uploader
+      currentTaskId={taskId}
+      canFetchDashboard={canFetch}
+      uploadStatus={status}
+      onTaskIdChange={setTaskId}
+      onCanFetchChange={setCanFetch}
+      onUploadStatusChange={setStatus}
+      onReset={handleReset}
+    />
+  );
+}
+```
+
+## Performance Considerations
+
+- **Auto-scroll**: Efficiently scrolls logs container
+- **WebSocket Management**: Proper cleanup on unmount
+- **Memory Management**: Limits log storage to prevent memory leaks
+- **Reconnection Logic**: Smart reconnection with timeout
+
+## Dependencies
+
+- **React Hook Form**: Form management and validation
+- **Zod**: Schema validation
+- **Lucide React**: Icons
+- **Next.js**: Routing and Link components
+- **Custom UI Components**: Card, Button, Progress, etc.
+
+This component provides a complete file upload experience with real-time feedback, making it easy for users to understand what's happening during the processing of their CSV files.

@@ -1,155 +1,207 @@
-## `DataProfiler` Class
+# Data Profiler Documentation
 
-A simple tool to analyze CSV data and generate a summary report.
-It gives you stats like data shape, missing values, column insights, correlations, and sample rows.
+## Overview
 
----
+The `DataProfiler` class analyzes your CSV data and creates a comprehensive report. It examines every column, finds patterns, calculates statistics, and gives you insights about data quality.
 
-### `__init__(self, df: pl.DataFrame)`
+Think of it as your data detective that tells you everything important about your dataset.
 
-Creates a new profiler using the given DataFrame.
+## Key Features
 
-- **df**: The CSV data as a Polars DataFrame.
-- Sets up logging and an empty profile dictionary.
+- **Column Analysis**: Statistics for numeric, text, and date columns
+- **Data Quality**: Missing values, duplicates, completeness scores
+- **Correlations**: How numeric columns relate to each other
+- **Memory Usage**: Estimates of how much space your data uses
+- **Chart Suggestions**: Recommends which columns work best for visualizations
 
----
+## Quick Start
 
-### `generate_profile(self) -> Dict[str, Any]`
+```python
+# Create profiler and generate report
+profiler = DataProfiler(df)
+profile = profiler.generate_profile()
 
-Creates a full profile report of the dataset.
+# Get column suggestions for charts
+suggestions = profiler.get_column_suggestions()
+```
 
-#### What it includes:
+## Core Methods
 
-- Basic info: row/column count, memory use, column names
-- Column-wise statistics (type, nulls, unique values, etc.)
-- Missing values per column
-- Overall data quality (null % and duplicate rows)
-- Correlation matrix for numeric columns
-- Sample (first 10) rows
+### `generate_profile()`
 
-#### Returns:
+Creates a complete analysis of your data.
 
-- A dictionary with the full profile report
+**What you get back:**
 
----
+```python
+{
+    "basic_info": {
+        "shape": {"rows": 1000, "columns": 5},
+        "columns": ["name", "age", "salary", "department"],
+        "memory_usage": {"total_mb": 2.5, "per_row_bytes": 45}
+    },
+    "column_analysis": {
+        "age": {
+            "dtype": "Int64",
+            "null_count": 5,
+            "unique_count": 45,
+            "min": 22, "max": 65, "mean": 38.5
+        }
+    },
+    "missing_values": {"age": 5, "name": 0},
+    "data_quality": {
+        "null_percentage": 2.1,
+        "duplicate_rows": 3,
+        "completeness_score": 97.9
+    },
+    "correlations": {"age": {"salary": 0.75}},
+    "sample_data": [{"name": "John", "age": 25}]  # First 10 rows
+}
+```
 
-### `_analyze_column(self, col: str) -> Dict[str, Any]`
+### `get_column_suggestions()`
 
-Analyzes a single column based on its type.
+Recommends which columns to use for different types of charts.
 
-- Counts nulls and unique values
-- Calls specialized methods if it's a numeric, text, or date column
+**Returns:**
 
-#### Parameters:
+```python
+{
+    "numeric": ["age", "salary", "years_experience"],      # Good for bar charts, histograms
+    "categorical": ["department", "status", "level"],      # Good for pie charts, groups
+    "date": ["hire_date", "last_review"],                  # Good for time series
+    "all": ["name", "age", "salary", "department"]         # All columns
+}
+```
 
-- `col`: Column name
+## Column Analysis Details
 
-#### Returns:
+### Numeric Columns
 
-- A dictionary of column statistics
+For numbers (age, salary, temperature):
 
----
+- **Basic stats**: min, max, mean, median, standard deviation
+- **Data distribution**: count of zeros, negative, positive values
+- **Quality checks**: missing values, outliers
 
-### `_analyze_numeric_column(self, series: pl.Series) -> Dict[str, Any]`
+### Text Columns
 
-Analyzes a numeric column (integers or floats).
+For text (names, categories, descriptions):
 
-#### Includes:
+- **Length analysis**: average, minimum, maximum character length
+- **Content quality**: empty strings, most common values
+- **Uniqueness**: how many different values exist
 
-- Min, max, mean, median, std deviation
-- Count of zeros, negatives, and positives
+### Date Columns
 
-#### Returns:
+For dates and timestamps:
 
-- Dictionary with stats or error info
+- **Date range**: earliest and latest dates in your data
+- **Time span**: how many days the data covers
+- **Quality**: missing dates, invalid formats
 
----
+## Data Quality Metrics
 
-### `_analyze_text_column(self, series: pl.Series) -> Dict[str, Any]`
+### Completeness Score
 
-Analyzes a text (string) column.
+Percentage of non-missing data across your entire dataset.
 
-#### Includes:
+- **90-100%**: Excellent data quality
+- **80-89%**: Good, minor cleanup needed
+- **70-79%**: Fair, some missing data issues
+- **Below 70%**: Poor, significant data quality problems
 
-- Average, min, and max string lengths
-- Count of empty strings
-- Top 10 most frequent values
+### Duplicate Detection
 
-#### Returns:
+Finds exact duplicate rows in your data.
 
-- Dictionary with stats or error info
+- **0-5%**: Normal amount of duplicates
+- **5-20%**: Moderate duplicates, consider cleaning
+- **Above 20%**: High duplicates, definitely needs cleanup
 
----
+### Missing Values Analysis
 
-### `_analyze_date_column(self, series: pl.Series) -> Dict[str, Any]`
+Shows which columns have the most missing data.
 
-Analyzes a date or datetime column.
+- **0%**: Perfect column
+- **1-10%**: Minor missing data
+- **10-30%**: Moderate issues
+- **Above 30%**: Major data collection problems
 
-#### Includes:
+## Correlations
 
-- Earliest and latest date
-- Range in days between them
+For numeric columns, shows how strongly they're related:
 
-#### Returns:
+- **0.8 to 1.0**: Very strong positive relationship
+- **0.5 to 0.8**: Moderate positive relationship
+- **-0.5 to 0.5**: Weak or no relationship
+- **-0.8 to -0.5**: Moderate negative relationship
+- **-1.0 to -0.8**: Very strong negative relationship
 
-- Dictionary with stats or error info
+**Example:**
 
----
+```python
+correlations = {
+    "age": {"salary": 0.75}  # Older employees tend to earn more
+}
+```
 
-### `_analyze_data_quality(self) -> Dict[str, Any]`
+## Memory Usage Estimation
 
-Analyzes the overall quality of the data.
+Helps you understand your data's size:
 
-#### Includes:
+- **Total MB**: Overall dataset size
+- **Per row bytes**: Average memory per row
+- **Scaling insights**: How much memory you'd need for larger datasets
 
-- Total cells and nulls
-- Null % and duplicate % across the whole dataset
-- A completeness score (how much data is non-null)
+## Common Use Cases
 
-#### Returns:
+### Data Quality Assessment
 
-- Dictionary with quality metrics
+```python
+profiler = DataProfiler(df)
+profile = profiler.generate_profile()
 
----
+quality = profile["data_quality"]
+print(f"Data is {quality['completeness_score']:.1f}% complete")
+print(f"Found {quality['duplicate_rows']} duplicate rows")
+```
 
-### `_calculate_correlations(self) -> Dict[str, Any]`
+### Column Selection for Analysis
 
-Finds correlation between all numeric columns.
+```python
+suggestions = profiler.get_column_suggestions()
 
-- Uses Pearson correlation
-- Only works if there are at least 2 numeric columns
+# Get numeric columns for correlation analysis
+numeric_cols = suggestions["numeric"]
 
-#### Returns:
+# Get categorical columns for grouping
+category_cols = suggestions["categorical"]
+```
 
-- Dictionary of correlation matrix or a message if not applicable
+### Quick Data Overview
 
----
+```python
+profile = profiler.generate_profile()
+info = profile["basic_info"]
 
-### `_estimate_memory_usage(self) -> Dict[str, Any]`
+print(f"Dataset: {info['shape']['rows']} rows, {info['shape']['columns']} columns")
+print(f"Memory usage: {info['memory_usage']['total_mb']} MB")
+```
 
-Estimates how much memory the dataset uses.
+## Error Handling
 
-#### Includes:
+The profiler handles common data issues gracefully:
 
-- Total memory in bytes and megabytes
-- Estimated memory per row
+- **Mixed data types**: Analyzes what it can, reports errors for problematic columns
+- **Empty datasets**: Provides meaningful error messages
+- **Corrupt data**: Skips problematic rows and continues analysis
+- **Memory issues**: Uses efficient processing for large datasets
 
-#### Returns:
+## Performance Notes
 
-- Dictionary with memory usage info
+- **Fast Analysis**: Uses Polars for efficient processing
+- **Memory Efficient**: Processes data without creating unnecessary copies
+- **Scalable**: Works well on datasets from small (100 rows) to large (1M+ rows)
 
----
-
-### `get_column_suggestions(self) -> Dict[str, List[str]]`
-
-Suggests columns for visualizations.
-
-#### Groups columns by:
-
-- **numeric**: numbers (for bar, line, histograms)
-- **categorical**: low-cardinality text columns (for bar/pie charts)
-- **date**: date/datetime columns (for time series)
-
-#### Returns:
-
-- Dictionary with column lists for each chart type
+The profiler gives you instant insights into your data's structure, quality, and characteristics, helping you make informed decisions about cleaning, analysis, and visualization.

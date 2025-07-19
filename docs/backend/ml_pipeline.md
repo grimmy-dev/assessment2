@@ -1,156 +1,225 @@
-## `MLProcessor` Class
+# ML Processor Documentation
 
-This class is used to:
+## Overview
 
-- Prepare data for training machine learning models.
-- Train a Random Forest model (classification or regression).
-- Make predictions.
-- Save/load trained models.
+The `MLProcessor` class is an automated machine learning tool that trains Random Forest models on your data. It handles both classification and regression tasks, automatically processes categorical data, and makes predictions easy.
 
-It works with CSV data (via Polars DataFrames) and uses scikit-learn for modeling.
+Think of it as your ML assistant that figures out what type of problem you have and builds a model for you.
 
----
+## Key Features
 
-### `__init__(self)`
+- **Auto Model Selection**: Automatically chooses classification or regression
+- **Smart Data Handling**: Processes text and numeric columns automatically
+- **Easy Predictions**: Simple predict method with proper error handling
+- **Model Persistence**: Save and load trained models
+- **Type Safety**: Handles data type conversions for JSON compatibility
 
-Initializes the `MLProcessor`.
+## Quick Start
 
-- Creates empty dictionaries to store:
+```python
+# Train a model
+processor = MLProcessor()
+result = processor.train_model("task_1", df, "target_column")
 
-  - Trained models
-  - Label encoders for categorical columns
-  - Model info like score, type, and columns used
-  - Feature column names used during training
+# Make predictions
+prediction = processor.predict("task_1", {"feature1": "value1", "feature2": 42})
 
----
+# Get model details
+info = processor.get_model_info("task_1")
+```
 
-### `prepare_data(self, df: pl.DataFrame, target_column: str)`
+## Core Methods
 
-Prepares the data for training.
+### `train_model(task_id: str, df: pl.DataFrame, target_column: str)`
 
-#### What it does:
+Trains a Random Forest model on your data.
 
-- Separates input features and the target column.
-- Converts categorical string columns to numbers using `LabelEncoder`.
-- Converts the data to numpy arrays for compatibility with scikit-learn.
+**What it does:**
 
-#### Parameters:
+1. **Data Preparation**: Converts text to numbers, handles missing values
+2. **Model Selection**: Picks classification or regression based on your target
+3. **Training**: Splits data (80/20) and trains the model
+4. **Evaluation**: Tests the model and returns accuracy/R² score
 
-- `df`: The input data as a Polars DataFrame.
-- `target_column`: The name of the column you want to predict.
+**Parameters:**
 
-#### Returns:
+- `task_id`: Unique ID to identify this model
+- `df`: Your data as a Polars DataFrame
+- `target_column`: The column you want to predict
 
-- `X_processed`: Features as a numpy array.
-- `y_array`: Target values as a numpy array.
-- `encoders`: Encoders used for feature columns.
-- `target_encoder`: Encoder used for the target column (if it was categorical).
+**Returns:**
 
----
+```python
+{
+    "success": True,
+    "model_type": "classification",  # or "regression"
+    "score": 0.85,                   # accuracy or R² score
+    "score_name": "Accuracy",        # or "R² Score"
+    "feature_columns": ["age", "income", "category"],
+    "n_samples": 1000,
+    "n_features": 3
+}
+```
 
-### `train_model(self, task_id: str, df: pl.DataFrame, target_column: str)`
+**Example:**
 
-Trains a Random Forest model using the data.
+```python
+# For classification (predicting categories)
+result = processor.train_model("customer_type", df, "customer_segment")
 
-#### What it does:
+# For regression (predicting numbers)
+result = processor.train_model("price_model", df, "house_price")
+```
 
-- Prepares the data using `prepare_data()`.
-- Automatically decides whether to use classification or regression.
-- Splits data into training and testing sets.
-- Trains the model and evaluates it (using accuracy or R² score).
-- Stores the model and related metadata.
+### `predict(task_id: str, input_data: Dict[str, Any])`
 
-#### Parameters:
+Makes predictions using your trained model.
 
-- `task_id`: A unique ID to keep track of the model.
-- `df`: The input data.
-- `target_column`: The column to predict.
+**Parameters:**
 
-#### Returns:
+- `task_id`: ID of the model to use
+- `input_data`: Dictionary with feature values
 
-A dictionary with:
+**Returns:**
 
-- Success flag
-- Model type ("classification" or "regression")
-- Score (Accuracy or R²)
-- Feature and column info
+```python
+{
+    "success": True,
+    "prediction": "Premium",         # the actual prediction
+    "prediction_proba": {            # confidence scores (classification only)
+        "Premium": 0.7,
+        "Standard": 0.2,
+        "Basic": 0.1
+    },
+    "model_type": "classification"
+}
+```
 
----
+**Example:**
 
-### `predict(self, task_id: str, input_data: Dict[str, Any])`
+```python
+# Make a prediction
+result = processor.predict("customer_type", {
+    "age": 35,
+    "income": 75000,
+    "category": "tech"
+})
 
-Makes a prediction using a trained model.
+print(result["prediction"])  # Output: "Premium"
+```
 
-#### What it does:
+### `get_model_info(task_id: str)`
 
-- Checks if a model exists for the given task ID.
-- Converts input data to a Polars DataFrame.
-- Encodes categorical fields if needed.
-- Uses the trained model to predict the result.
-- Decodes the result if the target was encoded.
-- Also provides prediction probabilities (if classification).
+Returns detailed information about a trained model.
 
-#### Parameters:
+**What you get:**
 
-- `task_id`: The task ID of the model to use.
-- `input_data`: A dictionary of input features.
+- Target column name
+- Feature columns and their types
+- Model type (classification/regression)
+- Performance score
+- Dataset size
 
-#### Returns:
+### `save_model(task_id: str, filepath: str)` / `load_model(task_id: str, filepath: str)`
 
-A dictionary with:
+Save your trained models to disk or load them back.
 
-- Prediction result
-- Prediction probabilities (if applicable)
-- Input used
-- Model type
-- Success flag or error
+```python
+# Save a model
+processor.save_model("customer_type", "models/customer_model.pkl")
 
----
+# Load it later
+processor.load_model("customer_type", "models/customer_model.pkl")
+```
 
-### `get_model_info(self, task_id: str)`
+## How It Works
 
-Returns information about a trained model.
+### Data Processing Pipeline
 
-#### Parameters:
+1. **Categorical Handling**: Text columns get converted to numbers using LabelEncoder
+2. **Missing Values**: Null values become "missing" category or 0 for numbers
+3. **Target Detection**: Automatically determines if it's a classification or regression problem
 
-- `task_id`: The model’s task ID.
+### Model Selection Logic
 
-#### Returns:
+**Classification** (predicting categories):
 
-- A dictionary with model details like type, score, and columns used (or `None` if not found).
+- Target column contains text
+- Target has less than 10 unique values
+- Examples: "Yes/No", customer types, product categories
 
----
+**Regression** (predicting numbers):
 
-### `save_model(self, task_id: str, filepath: str)`
+- Target column is numeric
+- Target has many unique values
+- Examples: prices, temperatures, sales amounts
 
-Saves the model to disk using `joblib`.
+### Smart Features
 
-#### Parameters:
+**Handles New Data**: When predicting, if the model sees a category it wasn't trained on, it gracefully handles it instead of crashing.
 
-- `task_id`: The model's ID.
-- `filepath`: Path to save the model file.
+**Type Safety**: All outputs are converted to standard Python types, so they work perfectly with JSON APIs.
 
-#### What it saves:
+**Error Recovery**: If something goes wrong during encoding or prediction, the model tries to recover rather than fail completely.
 
-- The model
-- Encoders
-- Feature columns
-- Model info
+## Common Use Cases
 
----
+### Customer Segmentation
 
-### `load_model(self, task_id: str, filepath: str)`
+```python
+# Train
+result = processor.train_model("segments", customer_df, "segment")
 
-Loads a saved model from disk.
+# Predict new customer segment
+prediction = processor.predict("segments", {
+    "age": 28,
+    "income": 45000,
+    "purchases_last_year": 12
+})
+```
 
-#### Parameters:
+### Price Prediction
 
-- `task_id`: ID to assign the loaded model.
-- `filepath`: Path of the saved model file.
+```python
+# Train on house data
+result = processor.train_model("house_prices", df, "price")
 
-#### What it loads:
+# Predict house price
+prediction = processor.predict("house_prices", {
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "square_feet": 1500,
+    "neighborhood": "downtown"
+})
+```
 
-- The model
-- Encoders
-- Feature columns
-- Model info
+### Quality Control
+
+```python
+# Predict if product will pass quality check
+result = processor.train_model("quality", df, "pass_fail")
+
+# Check new product
+prediction = processor.predict("quality", {
+    "temperature": 75,
+    "pressure": 14.7,
+    "material": "steel"
+})
+```
+
+## Error Handling
+
+The processor handles common issues automatically:
+
+- **Missing columns**: Tells you exactly which feature is missing
+- **Unknown categories**: Uses default values for unseen categories
+- **Data type mismatches**: Converts types as needed
+- **Model not found**: Clear error message if you reference wrong task_id
+
+## Performance Notes
+
+- **Training Speed**: Random Forest is fast and works well on most datasets
+- **Memory Usage**: Efficient with Polars DataFrames
+- **Accuracy**: Generally good performance out-of-the-box, no tuning needed
+
+The processor makes machine learning accessible - just point it at your data and target column, and it handles the rest automatically.

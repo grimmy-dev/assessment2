@@ -1,96 +1,195 @@
-## `CSVProcessor` Class
+# CSV Processor Documentation
 
-A helper class to handle CSV processing in the background.
-It reads a CSV file, cleans the data, detects potential target columns, and logs progress using a WebSocket connection.
+## Overview
 
-### `__init__(self, connection_manager: ConnectionManager)`
+The `CSVProcessor` class is a powerful async-enabled tool for processing CSV files with real-time progress tracking. It handles data cleaning, validation, and analysis while keeping clients updated through WebSocket connections.
 
-Initializes the CSV processor.
+Think of it as your smart CSV assistant that not only cleans your data but also tells you exactly what it's doing every step of the way.
 
-- **connection_manager**: A WebSocket manager used to send logs to the frontend.
-- Sets up storage for processed data, results, and active background tasks.
+## Key Features
 
----
+- **Async Processing**: Handles large files without blocking
+- **Real-time Progress**: Live updates via WebSocket connections
+- **Smart Data Cleaning**: Removes empty columns, duplicates, and fills missing values
+- **Target Column Detection**: Automatically finds columns suitable for analysis
+- **Error Handling**: Comprehensive error reporting with detailed logging
+- **Task Management**: Track and cancel running processes
 
-### `async def process_csv(self, file_content: bytes, task_id: str) -> ProcessingResult`
+## Class Structure
 
-Reads and processes a CSV file, step by step. Sends progress logs to the frontend.
+```python
+class CSVProcessor:
+    def __init__(self, connection_manager: ConnectionManager)
+```
 
-#### What it does:
+### Dependencies
 
-1. Sends a “processing started” log.
-2. Tries to read the CSV file.
-3. Cleans the data:
+- `polars`: Fast DataFrame library for data processing
+- `asyncio`: For async operations and task management
+- `ConnectionManager`: Handles WebSocket communications for progress updates
 
-   - Removes empty columns.
-   - Removes duplicate rows.
-   - Fills missing values (with median for numbers or "Unknown" for text).
+## Core Methods
 
-4. Identifies possible target columns (used for predictions later).
-5. Stores the cleaned data and result.
-6. Sends a final summary log.
-7. If anything fails, logs an error and stores a failure result.
+### `process_csv(file_content: bytes, task_id: str) -> ProcessingResult`
 
-#### Parameters:
+The main workhorse method that processes your CSV file through several stages:
 
-- **file_content**: The raw bytes of the uploaded CSV file.
-- **task_id**: A unique ID used to track logs and results for this processing task.
+**What it does:**
 
-#### Returns:
+1. **File Reading** (10%): Converts bytes to Polars DataFrame
+2. **Data Validation** (20%): Checks for empty files or missing columns
+3. **Structure Analysis** (30%): Examines data types and patterns
+4. **Cleaning Operations**:
+   - Remove empty columns (40%)
+   - Remove duplicate rows (50-60%)
+   - Fill missing values (70-75%)
+5. **Target Detection** (80-85%): Identifies columns suitable for ML/analysis
+6. **Results Storage** (90-100%): Saves processed data and metadata
 
-- A `ProcessingResult` object that includes rows, columns, and target column suggestions.
+**Parameters:**
 
----
+- `file_content`: Raw CSV file as bytes
+- `task_id`: Unique identifier for tracking this processing job
 
-### `async def start_processing(self, file_content: bytes, task_id: str)`
+**Returns:**
 
-Starts the `process_csv` method in the background so it doesn’t block other tasks.
+- `ProcessingResult`: Object containing success status, row counts, column info, and identified target columns
 
-#### What it does:
+**Example Usage:**
 
-- Runs the CSV processing in a separate async task.
-- Keeps track of the task so it can be cancelled or checked later.
-- Automatically removes it from the tracker when done.
+```python
+processor = CSVProcessor(connection_manager)
+result = await processor.process_csv(csv_bytes, "task_123")
+print(f"Processed {result.cleaned_rows} rows successfully!")
+```
 
-#### Parameters:
+### `start_processing(file_content: bytes, task_id: str)`
 
-- **file_content**: Raw CSV data in bytes.
-- **task_id**: Unique ID for this task.
+Kicks off processing in the background so your app stays responsive.
 
-#### Returns:
+**What it does:**
 
-- The background task object.
+- Creates an async task for CSV processing
+- Stores the task for later reference/cancellation
+- Sets up automatic cleanup when processing completes
 
----
+**Why use this instead of `process_csv` directly?**
 
-### `def get_processed_data(self, task_id: str) -> pl.DataFrame`
+- Non-blocking: Your app can do other things while processing happens
+- Cancellable: Users can stop long-running processes
+- Trackable: You can monitor active tasks
 
-Gets the processed DataFrame for a given task.
+### `get_processed_data(task_id: str) -> pl.DataFrame`
 
-#### Parameters:
+Retrieves the cleaned DataFrame after processing completes.
 
-- **task_id**: The ID of the task.
+**Example:**
 
-#### Returns:
+```python
+# After processing is done
+df = processor.get_processed_data("task_123")
+print(df.head())  # Show first few rows
+```
 
-- The cleaned Polars DataFrame, or `None` if it doesn't exist.
+### `cancel_task(task_id: str)`
 
----
+Stops a running processing task - useful for large files when users change their mind.
 
-### `def cancel_task(self, task_id: str)`
+### `get_active_tasks() -> List[str]`
 
-Cancels a running background CSV processing task.
+Returns list of currently running task IDs. Great for showing users what's happening in your app.
 
-#### Parameters:
+## Data Processing Pipeline
 
-- **task_id**: The ID of the task to cancel.
+### 1. Data Loading & Validation
 
----
+- Reads CSV using Polars (fast and memory-efficient)
+- Validates file isn't empty
+- Counts rows and columns for initial assessment
 
-### `def get_active_tasks(self) -> List[str]`
+### 2. Smart Cleaning
 
-Returns a list of all task IDs that are still running.
+**Empty Column Removal**: Drops columns that are completely null
 
-#### Returns:
+```python
+# Example: If a column has all null values, it gets removed
+# Before: ['name', 'age', 'empty_col', 'city']
+# After:  ['name', 'age', 'city']
+```
 
-- A list of strings (task IDs).
+**Duplicate Removal**: Keeps only unique rows
+
+```python
+# Before: 1000 rows with 50 duplicates
+# After:  950 unique rows
+```
+
+**Missing Value Handling**:
+
+- Numeric columns: Filled with median value
+- Text columns: Filled with "Unknown"
+
+### 3. Target Column Detection
+
+The processor automatically identifies columns that might be good for machine learning or analysis:
+
+**What makes a good target column?**
+
+- Has between 2-9 unique values (not too sparse, not too dense)
+- Doesn't contain excluded keywords like 'name', 'id', 'gender', etc.
+- Can be analyzed (no parsing errors)
+
+**Example:**
+
+```python
+# These columns would be flagged as potential targets:
+# - 'status' (values: 'active', 'inactive', 'pending')
+# - 'priority' (values: 'low', 'medium', 'high')
+# - 'category' (values: 'A', 'B', 'C', 'D')
+
+# These would be excluded:
+# - 'customer_name' (too many unique values)
+# - 'transaction_id' (excluded keyword + unique)
+# - 'gender' (excluded keyword)
+```
+
+## Error Handling
+
+The processor handles various error scenarios gracefully:
+
+- **File Reading Errors**: Invalid CSV format, encoding issues
+- **Empty Data**: Files with no rows or columns
+- **Processing Errors**: Memory issues, corrupt data
+- **WebSocket Errors**: Connection problems during progress updates
+
+All errors are logged with descriptive messages and don't crash the system.
+
+## Progress Tracking
+
+Progress updates are sent at key milestones with meaningful messages:
+
+```
+5%:   "Starting CSV processing..."
+10%:  "Reading CSV file..."
+20%:  "Loaded 1000 rows, 15 columns"
+30%:  "Analyzing data structure..."
+40%:  "Removing empty columns..."
+50%:  "Removing duplicate rows..."
+70%:  "Handling missing values..."
+80%:  "Identifying target columns..."
+100%: "Processing completed successfully!"
+```
+
+## Quick Start
+
+```python
+# Basic usage
+processor = CSVProcessor(connection_manager)
+result = await processor.process_csv(csv_bytes, "task_123")
+
+# Non-blocking processing
+await processor.start_processing(csv_bytes, "task_123")
+df = processor.get_processed_data("task_123")
+```
+
+The processor automatically cleans your CSV data and identifies useful columns for analysis.

@@ -2,50 +2,85 @@
 
 ## Overview
 
-The `Dashboard` component is responsible for displaying the data analysis results after a CSV file is uploaded and processed by the backend. It fetches profiling information and renders summary cards, column analysis, and visual charts.
+The Dashboard component displays data analysis and insights for uploaded CSV files. It shows data quality metrics, column information, and interactive charts.
 
-### Props
+## What it does
 
-- **taskId**: The unique task ID returned after CSV upload.
-- **canFetch**: Boolean flag indicating if data is ready to be fetched and displayed.
+- Shows dataset overview (rows, columns, memory usage)
+- Displays data quality score (completeness percentage)
+- Lists all columns with their data types and missing values
+- Renders interactive charts and visualizations
+- Handles loading states and error messages
 
-## Functions
+## Props
 
-### `fetchDashboardData`
+- `taskId`: Unique identifier for the uploaded dataset
+- `canFetch`: Boolean that controls when data can be loaded
 
-Fetches the profiling results for the uploaded CSV file using the `/profile/{task_id}` endpoint and updates the component state accordingly.
+## Main Features
 
-### `renderDataOverview`
+### Data Overview Cards
 
-Renders the top-level summary cards:
+Three summary cards showing:
 
-- Dataset Dimensions (Rows x Columns)
-- Data Quality Completeness Score
-- Memory Usage
+1. **Dataset Dimensions** - Number of rows and columns
+2. **Data Quality** - Completeness percentage (how much data is not missing)
+3. **Memory Usage** - How much memory the dataset uses
 
-### `renderColumnInfo`
+### Column Information
 
-Displays detailed stats per column, including:
+A grid showing each column with:
 
-- Column name and type
-- Missing values count
-- Unique values count
+- Column name
+- Data type (text, number, etc.)
+- Number of missing values
+- Number of unique values
 
-### `renderContent`
+### Interactive Charts
 
-Handles conditional rendering based on state:
+Uses the `UniversalChart` component to create visualizations based on the data.
 
-- Shows instruction if no file is uploaded
-- Shows loader when data is being analyzed
-- Displays error and retry button if fetching fails
-- Renders the data overview, column stats, and chart builder on success
+## Component States
 
-## Behavior
+### No File Uploaded
 
-- On mount and whenever `taskId` or `canFetch` changes, the component triggers `fetchDashboardData` to retrieve data from the backend.
-- The dashboard gracefully handles error and loading states and guides the user through the experience.
+- Shows message to upload a CSV file
+- Displays link to uploader section
+
+### Loading
+
+- Shows spinning loader
+- Message: "Analyzing your data and generating insights..."
+
+### Error
+
+- Shows error message with warning icon
+- Retry button to try loading again
+
+### Success
+
+- Displays all data overview cards
+- Shows column information grid
+- Renders interactive charts
+
+## API Integration
+
+- Fetches data from `/profile/{taskId}` endpoint
+- Uses environment variable `NEXT_PUBLIC_API_URL` or defaults to localhost
+- Automatically retries on error
 
 ## Dependencies
 
-- `UniversalChart`: Renders visualizations using columns from the dataset.
-- `ChartLoader`: Displays loading UI and fallback messages.
+- React hooks (useState, useEffect)
+- UI components (Button, Alert, Card, Badge)
+- Lucide icons for visual elements
+- Next.js Link for navigation
+- Custom chart components (UniversalChart, ChartLoader)
+
+## Usage
+
+```jsx
+<Dashboard taskId="abc123" canFetch={true} />
+```
+
+The component automatically loads and displays data when both `taskId` and `canFetch` are provided.
