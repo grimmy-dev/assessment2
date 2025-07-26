@@ -16,7 +16,7 @@ import numpy as np
 import polars as pl
 from fastapi.middleware.cors import CORSMiddleware
 
-from .types import (
+from .models import (
     PredictionRequest,
     PredictionResponse,
     TrainModelRequest,
@@ -27,8 +27,25 @@ from .connection_manager import ConnectionManager
 from .routes.ingestion_pipeline import CSVProcessor
 from .routes.profiler import DataProfiler
 from .routes.ml_pipeline import MLProcessor
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="CSV Data Profiler API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Optional: startup logic here
+    yield
+    # Shutdown logic
+    active_tasks = csv_processor.get_active_tasks()
+    for task_id in active_tasks:
+        csv_processor.cancel_task(task_id)
+
+    for task_id in list(connection_manager.active_connections.keys()):
+        connection_manager.disconnect(task_id)
+
+    print("Server shutdown complete")
+
+
+app = FastAPI(title="CSV Data Profiler API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -161,9 +178,15 @@ async def get_chart_data(
         raise HTTPException(status_code=404, detail="Task not found")
 
     try:
-        # Validate columns exist
+        # Validate x_axis column
         if x_axis not in df.columns:
             raise HTTPException(status_code=400, detail=f"Column '{x_axis}' not found")
+
+        # Validate y_axis if applicable
+        if chart_type not in ["histogram", "pie"] and not y_axis:
+            raise HTTPException(
+                status_code=400, detail="y_axis required for this chart type"
+            )
 
         if y_axis and y_axis not in df.columns:
             raise HTTPException(status_code=400, detail=f"Column '{y_axis}' not found")
@@ -176,6 +199,7 @@ async def get_chart_data(
             data = [
                 {"x": val} for val in df_limited[x_axis].to_list() if val is not None
             ]
+
         elif chart_type == "pie":
             # For pie chart, group by x_axis and count
             grouped = df_limited.group_by(x_axis).agg(pl.count().alias("count"))
@@ -183,18 +207,13 @@ async def get_chart_data(
                 {"name": str(row[x_axis]), "value": row["count"]}
                 for row in grouped.to_dicts()
             ]
+
         else:
             # For scatter, line, bar charts
-            if not y_axis:
-                raise HTTPException(
-                    status_code=400, detail="y_axis required for this chart type"
-                )
-
             data = []
             for row in df_limited.to_dicts():
                 x_val = row.get(x_axis)
                 y_val = row.get(y_axis)
-
                 if x_val is not None and y_val is not None:
                     data.append({"x": x_val, "y": y_val})
 
@@ -207,6 +226,8 @@ async def get_chart_data(
             "returned_rows": len(data),
         }
 
+    except HTTPException:
+        raise  # Let FastAPI return the intended status code
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error preparing chart data: {str(e)}"
@@ -347,19 +368,3 @@ async def health():
 async def root():
     """Root endpoint"""
     return {"message": "CSV Data Profiler API", "version": "1.0.0", "docs": "/docs"}
-
-
-# Graceful shutdown
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up on shutdown"""
-    # Cancel all active tasks
-    active_tasks = csv_processor.get_active_tasks()
-    for task_id in active_tasks:
-        csv_processor.cancel_task(task_id)
-
-    # Close all WebSocket connections
-    for task_id in list(connection_manager.active_connections.keys()):
-        connection_manager.disconnect(task_id)
-
-    print("Server shutdown complete")

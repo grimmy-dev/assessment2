@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict
 from fastapi import WebSocket
 
-from .types import LogMessage
+from .models import LogMessage
 
 
 class ConnectionManager:
