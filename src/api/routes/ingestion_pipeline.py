@@ -4,7 +4,7 @@ import json
 from typing import Dict, List
 import polars as pl
 
-from ..types import ProcessingResult
+from ..models import ProcessingResult
 
 from ..connection_manager import ConnectionManager
 
