@@ -4,9 +4,9 @@
 
 ![Smart CSV Analyzer](https://github.com/user-attachments/assets/ec103f75-2f2a-4a7a-97ea-2faa745c0273)
 
-**A simple web app for exploring CSV files, generating insights, and testing ML predictions—all from your browser**
+*A simple web app for exploring CSV files, generating insights, and testing ML predictions—all from your browser as part of my Assessment*
 
-[🎥 Watch Demo](https://drive.google.com/file/d/1Qj3NxcxS-mCWg55kc3SYlgCHoAK75rg9/view?usp=drive_link) • [🚀 Live Demo](#) • [📖 Documentation](#)
+[🎥 Watch Demo](https://drive.google.com/file/d/1Qj3NxcxS-mCWg55kc3SYlgCHoAK75rg9/view?usp=drive_link) • [📖 Documentation](https://github.com/grimmy-dev/assessment2/tree/main/docs)
 
 [![Next.js](https://img.shields.io/badge/Next.js-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -17,51 +17,34 @@
 
 ## ✨ Features
 
-<table>
-<tr>
-<td width="50%">
-
-### 📤 **Smart File Upload**
-
-- Drag & drop CSV files (up to 50MB)
+### 📤 File Upload
+- Upload CSV files (up to 50MB)
 - Real-time upload progress
 - Automatic file validation
 
-### 📈 **Data Insights**
-
+### 📈 Data Insights
 - Dataset overview (rows, columns, size)
 - Data quality scoring
 - Missing values detection
 - Column type analysis
 
-</td>
-<td width="50%">
-
-### 📊 **Interactive Charts**
-
+### 📊 Interactive Charts
 - Universal chart builder
 - Multiple visualization types
 - Real-time data exploration
 
-### 🤖 **ML Predictions**
-
+### 🤖 ML Predictions
 - Test predictions with custom inputs
 - Model confidence scores
 - Live prediction results
 
-</td>
-</tr>
-</table>
-
-### 🔄 **Real-time Updates**
-
+### 🔄 Real-time Updates
 - WebSocket progress tracking
 - Live logs and status updates
 - Instant feedback on operations
-
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -87,13 +70,13 @@ pnpm install
 
 ### 3️⃣ Start the Application
 
-**🎯 Option 1: Run Everything (Recommended)**
+**Option 1: Run Everything (Recommended)**
 
 ```bash
 pnpm run dev:full
 ```
 
-**🔧 Option 2: Run Separately**
+**Option 2: Run Separately**
 
 ```bash
 # Terminal 1: Backend
@@ -105,8 +88,8 @@ pnpm run dev
 
 ### 4️⃣ Open Your Browser
 
-- **🌐 Main App**: http://localhost:3000
-- **📚 API Docs**: http://localhost:8000/docs
+- **Main App**: `http://localhost:3000`
+- **Debug API**: `http://localhost:8000/docs`
 
 ---
 
@@ -132,47 +115,71 @@ assessment2/
 
 ---
 
-## 🎯 How to Use
-
-### Step 1: Upload Your Data
-
-<img src="https://via.placeholder.com/400x200/4f46e5/ffffff?text=Upload+CSV+File" alt="Upload interface" width="400"/>
-
-Drag and drop your CSV file or click to browse. The app supports files up to 50MB.
-
-### Step 2: Explore & Analyze
-
-<img src="https://via.placeholder.com/400x200/059669/ffffff?text=Data+Analysis" alt="Analysis dashboard" width="400"/>
-
-View data quality metrics, column information, and interactive visualizations.
-
-### Step 3: Test Predictions
-
-<img src="https://via.placeholder.com/400x200/dc2626/ffffff?text=ML+Predictions" alt="Prediction interface" width="400"/>
-
-Input custom values and get instant ML predictions with confidence scores.
-
----
-
 ## 🛠️ Technology Stack
-
-<div align="center">
-
-| Frontend                                                                                            | Backend                                                                                  | AI/ML                                                                                                    |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| ![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js)             | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi) | ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn) |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)   | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python)    | ![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas)                    |
-| ![Tailwind CSS](https://img.shields.io/badge/Tailwind-38B2AC?style=for-the-badge&logo=tailwind-css) | ![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=for-the-badge)          | ![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy)                       |
-
+<div align="center" style="border: 1px solid #ccc; border-radius: 12px;">
+<table>
+<tr>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" width="100"/>
+</td>
+</tr>
+<tr>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebSocket" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="scikit-learn" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="pandas" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy" width="100"/>
+</td>
+<td align="center" width="120">
+<img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" width="100"/>
+</td>
+</tr>
+</table>
 </div>
 
 ---
 
-## Try It Now
+## 🎯 How to Use
+
+<div align="center">
+  
+![CSV file Uploader](https://github.com/user-attachments/assets/d5306790-22e5-4f1d-9a54-1ab77b512118)
+  
+---
+
+![Data Analysis Dashboard](https://github.com/user-attachments/assets/95e3dcc8-1c64-4ff7-a01b-cffc6cc21d1f)
+
+---
+
+![ML Prediction Interface](https://github.com/user-attachments/assets/c0065ac6-69f4-4137-8906-04172a1cfea2)
+</div>
+
+---
+
+
+## 💡 Try It Now
 
 Don't have a CSV file? No problem! Use our sample dataset:
 
-```
+```bash
 📁 /data/testing_dataset.csv
 ```
 
@@ -198,7 +205,7 @@ We welcome contributions! Here's how to get started:
 
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+3. **Commit** your changes (`git commit-m 'Add amazing feature'`)
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. **Open** a Pull Request
 
