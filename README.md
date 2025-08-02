@@ -4,7 +4,7 @@
 
 ![Smart CSV Analyzer](https://github.com/user-attachments/assets/ec103f75-2f2a-4a7a-97ea-2faa745c0273)
 
-*A simple web app for exploring CSV files, generating insights, and testing ML predictions—all from your browser as part of my Assessment*
+*A simple web app for exploring CSV files, generating insights, and testing ML predictions—all from your browser*
 
 [🎥 Watch Demo](https://drive.google.com/file/d/1Qj3NxcxS-mCWg55kc3SYlgCHoAK75rg9/view?usp=drive_link) • [📖 Documentation](https://github.com/grimmy-dev/assessment2/tree/main/docs)
 
